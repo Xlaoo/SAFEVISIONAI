@@ -1,0 +1,21 @@
+# Android Studio
+.gradle/
+.idea/
+*.iml
+
+# Build
+build/
+app/build/
+
+# Local
+local.properties
+
+# Keystore
+*.jks
+*.keystore
+
+# Logs
+*.log
+
+# Firebase
+google-services.json

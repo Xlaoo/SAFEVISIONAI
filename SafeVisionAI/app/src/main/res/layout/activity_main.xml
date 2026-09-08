@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#020D1D"
+    android:fillViewport="true"
+    android:scrollbars="none">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:paddingStart="28dp"
+        android:paddingTop="55dp"
+        android:paddingEnd="28dp"
+        android:paddingBottom="30dp">
+
+        <!-- LOGO -->
+
+        <ImageView
+            android:id="@+id/imgLogoLogin"
+            android:layout_width="92dp"
+            android:layout_height="92dp"
+            android:contentDescription="Logo SafeVision AI"
+            android:scaleType="fitCenter"
+            android:src="@drawable/safevision_logo" />
+
+        <!-- NOMBRE -->
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:letterSpacing="0.18"
+            android:text="SAFEVISION AI"
+            android:textColor="#FFFFFF"
+            android:textSize="25sp"
+            android:textStyle="bold" />
+
+        <!-- SUBTÍTULO -->
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:letterSpacing="0.14"
+            android:text="SEGURIDAD EN TIEMPO REAL"
+            android:textColor="#00D4FF"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+
+        <!-- TARJETA LOGIN -->
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            app:cardBackgroundColor="#07172C"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="0dp"
+            app:strokeColor="#174D80"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="22dp">
+
+                <!-- TITULO -->
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.15"
+                    android:text="ACCESO AL SISTEMA"
+                    android:textColor="#A8BED9"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <!-- DNI -->
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="22dp"
+                    android:layout_marginBottom="7dp"
+                    android:text="DNI"
+                    android:textColor="#8EA8C5"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/layoutDniLogin"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:boxBackgroundColor="#081A31"
+                    app:boxBackgroundMode="outline"
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxStrokeColor="#1766A5"
+                    app:boxStrokeWidth="1dp"
+                    app:boxStrokeWidthFocused="2dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/txtDniLogin"
+                        android:hint="Ingrese su DNI"
+                        android:inputType="number"
+                        android:maxLength="8"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:maxLines="1"
+                        android:paddingStart="15dp"
+                        android:paddingEnd="15dp"
+                        android:textColor="#FFFFFF"
+                        android:textColorHint="#58728F"
+                        android:textSize="14sp" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- CONTRASEÑA -->
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="17dp"
+                    android:layout_marginBottom="7dp"
+                    android:text="CONTRASEÑA"
+                    android:textColor="#8EA8C5"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/layoutPasswordLogin"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:boxBackgroundColor="#081A31"
+                    app:boxBackgroundMode="outline"
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxStrokeColor="#1766A5"
+                    app:boxStrokeWidth="1dp"
+                    app:boxStrokeWidthFocused="2dp"
+                    app:endIconMode="password_toggle">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/txtPasswordLogin"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:hint="Ingresa tu contraseña"
+                        android:inputType="textPassword"
+                        android:maxLines="1"
+                        android:paddingStart="15dp"
+                        android:textColor="#FFFFFF"
+                        android:textColorHint="#58728F"
+                        android:textSize="14sp" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- BOTÓN -->
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnIniciarSesion"
+                    android:layout_width="match_parent"
+                    android:layout_height="58dp"
+                    android:layout_marginTop="24dp"
+                    android:letterSpacing="0.12"
+                    android:text="INICIAR SESIÓN"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    app:backgroundTint="#0A84FF"
+                    app:cornerRadius="13dp" />
+
+                <!-- OLVIDÉ CONTRASEÑA -->
+
+                <TextView
+                    android:id="@+id/txtOlvidePassword"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:text="¿Olvidaste tu contraseña?"
+                    android:textColor="#00C8FF"
+                    android:textSize="13sp" />
+
+                <!-- REGISTRO -->
+
+                <TextView
+                    android:id="@+id/txtCrearCuenta"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center_horizontal"
+                    android:gravity="center"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:text="¿No tienes una cuenta? Crear cuenta"
+                    android:textColor="#8EA8C5"
+                    android:textSize="13sp" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- FOOTER -->
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:text="SafeVision AI v1.0 • Sistema Industrial EPP"
+            android:textColor="#315477"
+            android:textSize="10sp" />
+
+    </LinearLayout>
+
+</ScrollView>
