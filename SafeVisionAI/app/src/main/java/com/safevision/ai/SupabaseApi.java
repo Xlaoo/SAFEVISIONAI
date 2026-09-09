@@ -26,22 +26,31 @@ public interface SupabaseApi {
             @Body Map<String,String> datos
     );
 
-
-    @PUT("auth/v1/user")
-    Call<Map<String,Object>> actualizarPassword(
-            @Header("Authorization") String token,
+    @POST("functions/v1/cambiar-password")
+    Call<Map<String,Object>> cambiarPassword(
             @Body Map<String,String> datos
     );
-
 
     @GET("rest/v1/perfiles")
     Call<List<Map<String,Object>>> verificarDni(
 
-            @Query("dni") String dni,
+            @Query("select") String select,
 
-            @Header("apikey") String apiKey,
+            @Query("dni") String dni
+    );
+    @GET("rest/v1/perfiles")
+    Call<List<Map<String,Object>>> verificarDatosRegistro(
 
-            @Header("Authorization") String auth
+            @Query("select") String select,
+
+            @Query("or") String filtro
+    );
+    @GET("rest/v1/perfiles")
+    Call<List<Map<String,Object>>> buscarUsuarioCorreo(
+
+            @Query("select") String select,
+
+            @Query("correo") String correo
     );
 
 }

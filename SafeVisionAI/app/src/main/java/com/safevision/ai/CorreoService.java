@@ -1,7 +1,7 @@
 package com.safevision.ai;
 
-import android.os.AsyncTask;
 import android.util.Log;
+
 import javax.mail.*;
 import javax.mail.internet.*;
 import java.util.Properties;
@@ -15,7 +15,7 @@ public class CorreoService {
             String codigo
     ){
 
-        AsyncTask.execute(() -> {
+        new Thread(() -> {
 
             try {
 
@@ -24,10 +24,13 @@ public class CorreoService {
 
                 final String clave =
                         "";
+
                 final String correoRemitente =
                         "rosalespapuicorafa@gmail.com";
 
+
                 Properties props = new Properties();
+
 
                 props.put(
                         "mail.smtp.auth",
@@ -50,13 +53,25 @@ public class CorreoService {
                 );
 
 
+                props.put(
+                        "mail.smtp.connectiontimeout",
+                        "3000"
+                );
+
+
+                props.put(
+                        "mail.smtp.timeout",
+                        "5000"
+                );
+
+
                 Session session =
                         Session.getInstance(
                                 props,
                                 new Authenticator() {
 
-                                    protected PasswordAuthentication
-                                    getPasswordAuthentication(){
+                                    @Override
+                                    protected PasswordAuthentication getPasswordAuthentication(){
 
                                         return new PasswordAuthentication(
                                                 usuario,
@@ -64,8 +79,11 @@ public class CorreoService {
                                         );
 
                                     }
-
                                 });
+
+
+                long inicio =
+                        System.currentTimeMillis();
 
 
                 Message mensaje =
@@ -84,28 +102,49 @@ public class CorreoService {
 
 
                 mensaje.setSubject(
-                        "Código de verificación SafeVisionAI"
+                        "Código SafeVisionAI"
                 );
 
 
                 mensaje.setText(
-                        "Tu código de verificación es: "
+                        "Hola,\n\n"
+                                + "Tu código de verificación SafeVisionAI es:\n\n"
                                 + codigo
-                                +
-                                "\n\nEste código vence en 1 minuto."
+                                + "\n\n"
+                                + "Este código tiene una duración de 1 minuto y 30 segundos."
+                                + "\n\n"
+                                + "Si no solicitaste este código, ignora este mensaje."
                 );
 
 
                 Transport.send(mensaje);
 
 
+                long fin =
+                        System.currentTimeMillis();
+
+
+                Log.d(
+                        "CORREO",
+                        "Tiempo envío: "
+                                +
+                                (fin-inicio)
+                                +
+                                " ms"
+                );
+
+
             }catch(Exception e){
 
-                Log.e("CORREO_ERROR", e.getMessage(), e);
+                Log.e(
+                        "CORREO_ERROR",
+                        e.toString()
+                );
 
             }
 
-        });
+
+        }).start();
 
     }
 

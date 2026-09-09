@@ -133,88 +133,26 @@ public class NuevaPasswordActivity extends AppCompatActivity {
         Map<String, String> datos =
                 new HashMap<>();
 
-        datos.put("password", password);
-
-        String token = getSharedPreferences(
-                "SafeVisionSession",
-                MODE_PRIVATE
-        )
-                .getString(
-                        "access_token",
-                        null
-                );
+        String uid =
+                getIntent()
+                        .getStringExtra("uid");
 
 
-        if(token == null){
+        datos.put(
+                "uid",
+                uid
+        );
 
-            Toast.makeText(
-                    this,
-                    "Sesión no encontrada",
-                    Toast.LENGTH_LONG
-            ).show();
+        datos.put(
+                "password",
+                password
+        );
 
-            return;
-        }
-
-
-        supabaseApi.actualizarPassword(
-                        "Bearer " + token,
-                        datos
-                )
-                .enqueue(
-                        new Callback<Map<String,Object>>() {
-
-                            @Override
-                            public void onResponse(
-                                    Call<Map<String,Object>> call,
-                                    Response<Map<String,Object>> response) {
-
-                                btnCambiarPassword.setEnabled(true);
-                                btnCambiarPassword.setText(
-                                        "CAMBIAR CONTRASEÑA"
-                                );
-
-                                if (response.isSuccessful()) {
-
-                                    Toast.makeText(
-                                            NuevaPasswordActivity.this,
-                                            "Contraseña actualizada correctamente",
-                                            Toast.LENGTH_LONG
-                                    ).show();
-
-                                    volverLogin();
-
-                                } else {
-
-                                    Toast.makeText(
-                                            NuevaPasswordActivity.this,
-                                            "No se pudo actualizar. Código: "
-                                                    + response.code(),
-                                            Toast.LENGTH_LONG
-                                    ).show();
-                                }
-                            }
-
-                            @Override
-                            public void onFailure(
-                                    Call<Map<String,Object>> call,
-                                    Throwable t) {
-
-                                btnCambiarPassword.setEnabled(true);
-                                btnCambiarPassword.setText(
-                                        "CAMBIAR CONTRASEÑA"
-                                );
-
-                                Toast.makeText(
-                                        NuevaPasswordActivity.this,
-                                        "Error de conexión: "
-                                                + t.getMessage(),
-                                        Toast.LENGTH_LONG
-                                ).show();
-                            }
-                        }
-                );
+        actualizarPassword(datos);
     }
+
+
+
 
     private void volverLogin() {
 
@@ -235,4 +173,69 @@ public class NuevaPasswordActivity extends AppCompatActivity {
 
         finish();
     }
+    private void actualizarPassword(
+            Map<String,String> datos
+    ){
+
+        supabaseApi.cambiarPassword(datos)
+                .enqueue(new Callback<Map<String,Object>>() {
+
+                    @Override
+                    public void onResponse(
+                            Call<Map<String,Object>> call,
+                            Response<Map<String,Object>> response
+                    ){
+
+                        btnCambiarPassword.setEnabled(true);
+
+                        btnCambiarPassword.setText(
+                                "CAMBIAR CONTRASEÑA"
+                        );
+
+
+                        if(response.isSuccessful()){
+
+
+                            Toast.makeText(
+                                    NuevaPasswordActivity.this,
+                                    "Contraseña actualizada correctamente",
+                                    Toast.LENGTH_LONG
+                            ).show();
+
+
+                            volverLogin();
+
+
+                        }else{
+
+
+                            Toast.makeText(
+                                    NuevaPasswordActivity.this,
+                                    "Error: "+response.code(),
+                                    Toast.LENGTH_LONG
+                            ).show();
+
+                        }
+
+                    }
+
+
+                    @Override
+                    public void onFailure(
+                            Call<Map<String,Object>> call,
+                            Throwable t
+                    ){
+
+                        Toast.makeText(
+                                NuevaPasswordActivity.this,
+                                "Error conexión: "+t.getMessage(),
+                                Toast.LENGTH_LONG
+                        ).show();
+
+                    }
+
+                });
+
+    }
+
 }

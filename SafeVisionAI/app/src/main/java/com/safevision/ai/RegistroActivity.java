@@ -15,6 +15,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import retrofit2.Call;
@@ -101,6 +102,16 @@ public class RegistroActivity extends AppCompatActivity {
             txtTelefono.requestFocus();
             return;
         }
+        if (!telefono.matches("9[0-9]{8}")) {
+
+            txtTelefono.setError(
+                    "El teléfono debe comenzar con 9 y tener 9 dígitos"
+            );
+
+            txtTelefono.requestFocus();
+
+            return;
+        }
 
         if (!Patterns.EMAIL_ADDRESS.matcher(correo).matches()) {
             txtCorreo.setError("Correo electrónico no válido");
@@ -137,16 +148,9 @@ public class RegistroActivity extends AppCompatActivity {
         }
 
         btnRegistrar.setEnabled(false);
-        btnRegistrar.setText("REGISTRANDO...");
-        codigoGenerado = CodigoVerificacion.generarCodigo();
+        btnRegistrar.setText("VALIDANDO...");
 
-        tiempoCodigoGenerado = System.currentTimeMillis();
-
-        CorreoService.enviarCodigo(
-                correo,
-                codigoGenerado
-        );
-        mostrarModalOtp();
+        verificarDatosDuplicados();
     }
 
     private void mostrarModalOtp() {
@@ -264,20 +268,28 @@ public class RegistroActivity extends AppCompatActivity {
             Button btnReenviarCodigo
     ){
 
-        new CountDownTimer(60000,1000){
+        new CountDownTimer(90000, 1000){
 
             @Override
             public void onTick(long millis){
 
-                long segundos =
+                long segundosTotales =
                         millis / 1000;
 
+                long minutos =
+                        segundosTotales / 60;
+
+                long segundos =
+                        segundosTotales % 60;
 
                 txtTiempo.setText(
-                        "El código vence en 00:"
-                                + String.format("%02d",segundos)
+                        "El código vence en "
+                                + String.format(
+                                "%02d:%02d",
+                                minutos,
+                                segundos
+                        )
                 );
-
             }
 
 
@@ -288,11 +300,8 @@ public class RegistroActivity extends AppCompatActivity {
                         "Código vencido"
                 );
 
-
                 btnReenviarCodigo.setEnabled(true);
-
             }
-
 
         }.start();
 
@@ -307,7 +316,7 @@ public class RegistroActivity extends AppCompatActivity {
                 tiempoActual - tiempoCodigoGenerado;
 
 
-        if(tiempoPasado > 60000){
+        if(tiempoPasado > 90000){
 
             Toast.makeText(
                     this,
@@ -470,6 +479,167 @@ public class RegistroActivity extends AppCompatActivity {
 
                 });
 
+
+    }
+    private void verificarDatosDuplicados() {
+
+        String filtro =
+                "(dni.eq." + dni
+                        + ",telefono.eq." + telefono
+                        + ",correo.eq." + correo + ")";
+
+        supabaseApi.verificarDatosRegistro(
+                        "dni,telefono,correo",
+                        filtro
+                )
+                .enqueue(new Callback<List<Map<String, Object>>>() {
+
+                    @Override
+                    public void onResponse(
+                            Call<List<Map<String, Object>>> call,
+                            Response<List<Map<String, Object>>> response
+                    ) {
+
+                        if (!response.isSuccessful()) {
+
+                            btnRegistrar.setEnabled(true);
+                            btnRegistrar.setText("REGISTRARSE");
+
+                            Toast.makeText(
+                                    RegistroActivity.this,
+                                    "No se pudieron validar los datos",
+                                    Toast.LENGTH_LONG
+                            ).show();
+
+                            return;
+                        }
+
+
+                        List<Map<String, Object>> usuarios =
+                                response.body();
+
+
+                        if (usuarios != null && !usuarios.isEmpty()) {
+
+                            for (Map<String, Object> usuario : usuarios) {
+
+                                Object dniExistente =
+                                        usuario.get("dni");
+
+                                Object telefonoExistente =
+                                        usuario.get("telefono");
+
+                                Object correoExistente =
+                                        usuario.get("correo");
+
+
+                                if (dniExistente != null
+                                        && dni.equals(
+                                        dniExistente.toString()
+                                )) {
+
+                                    txtDni.setError(
+                                            "Este DNI ya está registrado"
+                                    );
+
+                                    txtDni.requestFocus();
+
+                                    btnRegistrar.setEnabled(true);
+                                    btnRegistrar.setText("REGISTRARSE");
+
+                                    return;
+                                }
+
+
+                                if (telefonoExistente != null
+                                        && telefono.equals(
+                                        telefonoExistente.toString()
+                                )) {
+
+                                    txtTelefono.setError(
+                                            "Este teléfono ya está registrado"
+                                    );
+
+                                    txtTelefono.requestFocus();
+
+                                    btnRegistrar.setEnabled(true);
+                                    btnRegistrar.setText("REGISTRARSE");
+
+                                    return;
+                                }
+
+
+                                if (correoExistente != null
+                                        && correo.equalsIgnoreCase(
+                                        correoExistente.toString()
+                                )) {
+
+                                    txtCorreo.setError(
+                                            "Este correo ya está registrado"
+                                    );
+
+                                    txtCorreo.requestFocus();
+
+                                    btnRegistrar.setEnabled(true);
+                                    btnRegistrar.setText("REGISTRARSE");
+
+                                    return;
+                                }
+
+                            }
+
+                        }
+
+
+                        // ==========================================
+                        // DATOS NO REPETIDOS → ENVIAR CÓDIGO
+                        // ==========================================
+
+                        codigoGenerado =
+                                CodigoVerificacion.generarCodigo();
+
+                        tiempoCodigoGenerado =
+                                System.currentTimeMillis();
+
+
+                        CorreoService.enviarCodigo(
+                                correo,
+                                codigoGenerado
+                        );
+
+
+                        btnRegistrar.setText(
+                                "REGISTRANDO..."
+                        );
+
+
+                        mostrarModalOtp();
+
+                    }
+
+
+                    @Override
+                    public void onFailure(
+                            Call<List<Map<String, Object>>> call,
+                            Throwable t
+                    ) {
+
+                        btnRegistrar.setEnabled(true);
+
+                        btnRegistrar.setText(
+                                "REGISTRARSE"
+                        );
+
+
+                        Toast.makeText(
+                                RegistroActivity.this,
+                                "Error al validar los datos",
+                                Toast.LENGTH_LONG
+                        ).show();
+
+                    }
+
+                });
 
     }
 }

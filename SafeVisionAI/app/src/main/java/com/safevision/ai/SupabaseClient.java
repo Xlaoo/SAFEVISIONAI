@@ -18,18 +18,31 @@ public class SupabaseClient {
 
                         Request request = chain.request()
                                 .newBuilder()
-                                .addHeader("apikey", SupabaseConfig.API_KEY)
-                                .addHeader("Content-Type", "application/json")
+                                .addHeader(
+                                        "apikey",
+                                        SupabaseConfig.API_KEY
+                                )
+                                .addHeader(
+                                        "Authorization",
+                                        "Bearer " + SupabaseConfig.API_KEY
+                                )
+                                .addHeader(
+                                        "Content-Type",
+                                        "application/json"
+                                )
                                 .build();
 
                         return chain.proceed(request);
                     })
                     .build();
 
+
             retrofit = new Retrofit.Builder()
                     .baseUrl(SupabaseConfig.URL)
                     .client(client)
-                    .addConverterFactory(GsonConverterFactory.create())
+                    .addConverterFactory(
+                            GsonConverterFactory.create()
+                    )
                     .build();
         }
 

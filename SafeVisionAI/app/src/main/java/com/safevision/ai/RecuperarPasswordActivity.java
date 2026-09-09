@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.text.InputType;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.Gravity;
 import android.widget.Button;
@@ -15,6 +16,13 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.List;
+import java.util.Map;
+import android.content.SharedPreferences;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class RecuperarPasswordActivity extends AppCompatActivity {
 
     private EditText txtCorreoRecuperar;
@@ -22,7 +30,7 @@ public class RecuperarPasswordActivity extends AppCompatActivity {
     private TextView btnVolverRecuperar;
     private TextView txtMensajeRecuperar;
     private CountDownTimer timer;
-
+    private SharedPreferences prefs;
     private String codigoGenerado;
     private long tiempoCodigoGenerado;
     private String correo;
@@ -47,7 +55,11 @@ public class RecuperarPasswordActivity extends AppCompatActivity {
         txtMensajeRecuperar =
                 findViewById(R.id.txtMensajeRecuperar);
 
-
+        prefs =
+                getSharedPreferences(
+                        "RECUPERACION",
+                        MODE_PRIVATE
+                );
 
         btnVolverRecuperar.setOnClickListener(v -> finish());
 
@@ -98,25 +110,34 @@ public class RecuperarPasswordActivity extends AppCompatActivity {
         codigoGenerado =
                 CodigoVerificacion.generarCodigo();
 
+        prefs.edit()
+                .putString(
+                        "codigo",
+                        codigoGenerado
+                )
+                .putLong(
+                        "tiempo",
+                        System.currentTimeMillis()
+                )
+                .apply();
+
 
         tiempoCodigoGenerado =
                 System.currentTimeMillis();
 
 
 
+        Toast.makeText(
+                this,
+                "Enviando código...",
+                Toast.LENGTH_SHORT
+        ).show();
+
+
         CorreoService.enviarCodigo(
                 correo,
                 codigoGenerado
         );
-
-
-
-        Toast.makeText(
-                this,
-                "Código enviado",
-                Toast.LENGTH_LONG
-        ).show();
-
 
 
         mostrarModalCodigo();
@@ -222,14 +243,21 @@ public class RecuperarPasswordActivity extends AppCompatActivity {
             verificar.setOnClickListener(x -> {
 
 
+                long tiempoGuardado =
+                        prefs.getLong(
+                                "tiempo",
+                                0
+                        );
+
+
                 long diferencia =
                         System.currentTimeMillis()
                                 -
-                                tiempoCodigoGenerado;
+                                tiempoGuardado;
 
 
 
-                if(diferencia > 60000){
+                if(diferencia > 90000){
 
 
                     Toast.makeText(
@@ -256,28 +284,21 @@ public class RecuperarPasswordActivity extends AppCompatActivity {
 
 
 
-                if(codigo.equals(codigoGenerado)){
+                String codigoGuardado =
+                        prefs.getString(
+                                "codigo",
+                                ""
+                        );
 
 
-                    dialog.dismiss();
+                if(codigo.equals(codigoGuardado)){
+
+                    prefs.edit()
+                            .clear()
+                            .apply();
 
 
-                    Intent intent =
-                            new Intent(
-                                    this,
-                                    NuevaPasswordActivity.class
-                            );
-
-
-                    intent.putExtra(
-                            "correo",
-                            correo
-                    );
-
-
-                    startActivity(intent);
-
-
+                    buscarUidPorCorreo(correo, dialog);
 
                 }else{
 
@@ -311,6 +332,18 @@ public class RecuperarPasswordActivity extends AppCompatActivity {
 
             codigoGenerado =
                     CodigoVerificacion.generarCodigo();
+
+
+            prefs.edit()
+                    .putString(
+                            "codigo",
+                            codigoGenerado
+                    )
+                    .putLong(
+                            "tiempo",
+                            System.currentTimeMillis()
+                    )
+                    .apply();
 
 
             tiempoCodigoGenerado =
@@ -359,7 +392,7 @@ public class RecuperarPasswordActivity extends AppCompatActivity {
 
 
         timer = new CountDownTimer(
-                60000,
+                90000,
                 1000
         ){
 
@@ -394,6 +427,110 @@ public class RecuperarPasswordActivity extends AppCompatActivity {
 
 
         }.start();
+
+
+    }
+    private void buscarUidPorCorreo(
+            String correo,
+            AlertDialog dialog
+    ){
+
+        SupabaseApi api =
+                SupabaseClient
+                        .getClient()
+                        .create(SupabaseApi.class);
+
+
+        api.buscarUsuarioCorreo(
+                        "*",
+                        "eq."+correo
+                )
+                .enqueue(new Callback<List<Map<String,Object>>>() {
+
+
+                    @Override
+                    public void onResponse(
+                            Call<List<Map<String,Object>>> call,
+                            Response<List<Map<String,Object>>> response
+                    ){
+                        Log.d("SUPABASE_CORREO",
+                                "Codigo: "+response.code());
+
+
+                        Log.d("SUPABASE_CORREO",
+                                "Respuesta: "+response.body());
+
+                        if(response.body()!=null
+                                &&
+                                !response.body().isEmpty()){
+
+
+                            Map<String,Object> usuario =
+                                    response.body().get(0);
+
+
+                            String uid =
+                                    usuario.get("id").toString();
+
+
+
+                            Intent intent =
+                                    new Intent(
+                                            RecuperarPasswordActivity.this,
+                                            NuevaPasswordActivity.class
+                                    );
+
+
+                            intent.putExtra(
+                                    "uid",
+                                    uid
+                            );
+
+
+                            intent.putExtra(
+                                    "correo",
+                                    correo
+                            );
+
+
+                            dialog.dismiss();
+
+
+                            startActivity(intent);
+
+
+
+                        }else{
+
+
+                            Toast.makeText(
+                                    RecuperarPasswordActivity.this,
+                                    "Usuario no encontrado",
+                                    Toast.LENGTH_LONG
+                            ).show();
+
+                        }
+
+
+                    }
+
+
+                    @Override
+                    public void onFailure(
+                            Call<List<Map<String,Object>>> call,
+                            Throwable t
+                    ){
+
+                        Toast.makeText(
+                                RecuperarPasswordActivity.this,
+                                "Error buscando usuario",
+                                Toast.LENGTH_LONG
+                        ).show();
+
+                    }
+
+
+                });
 
 
     }

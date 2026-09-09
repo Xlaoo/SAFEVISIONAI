@@ -153,12 +153,10 @@ public class MainActivity extends AppCompatActivity {
             String dni,
             String password
     ){
-
         supabaseApi.verificarDni(
-                        "eq." + dni.trim(),
-                        SupabaseConfig.API_KEY,
-                        "Bearer " + SupabaseConfig.API_KEY
-                )
+                "*",
+                "eq." + dni.trim()
+        )
                 .enqueue(new Callback<List<Map<String,Object>>>() {
 
 
@@ -205,6 +203,14 @@ public class MainActivity extends AppCompatActivity {
                                         Toast.LENGTH_LONG
                                 ).show();
 
+
+                                btnIniciarSesion.setEnabled(true);
+
+                                btnIniciarSesion.setText(
+                                        "INICIAR SESIÓN"
+                                );
+
+
                                 return;
                             }
 
@@ -212,13 +218,27 @@ public class MainActivity extends AppCompatActivity {
                             String correo = correoObj.toString();
 
 
+                            String uid = usuario.get("id").toString();
+
+
+
+
+
+
                             iniciarSesionSupabase(
                                     correo,
-                                    password
+                                    password,
+                                    uid
                             );
 
 
                         }else{
+
+
+                            Log.e(
+                                    "SUPABASE_DNI",
+                                    "RESPUESTA VACIA: " + response.body()
+                            );
 
 
                             Toast.makeText(
@@ -229,6 +249,7 @@ public class MainActivity extends AppCompatActivity {
 
 
                             btnIniciarSesion.setEnabled(true);
+
                             btnIniciarSesion.setText(
                                     "INICIAR SESIÓN"
                             );
@@ -263,7 +284,8 @@ public class MainActivity extends AppCompatActivity {
     }
     private void iniciarSesionSupabase(
             String correo,
-            String password
+            String password,
+            String uid
     ){
 
 
@@ -283,7 +305,21 @@ public class MainActivity extends AppCompatActivity {
                             Call<Map<String,Object>> call,
                             Response<Map<String,Object>> response
                     ){
+                        if(uid == null){
 
+                            Toast.makeText(
+                                    MainActivity.this,
+                                    "Error obteniendo usuario",
+                                    Toast.LENGTH_LONG
+                            ).show();
+
+                            btnIniciarSesion.setEnabled(true);
+                            btnIniciarSesion.setText(
+                                    "INICIAR SESIÓN"
+                            );
+
+                            return;
+                        }
 
                         if(response.isSuccessful()
                                 && response.body()!=null){
@@ -309,6 +345,10 @@ public class MainActivity extends AppCompatActivity {
                                             "correo",
                                             correo
                                     )
+                                    .putString(
+                                            "uid",
+                                            uid
+                                    )
                                     .apply();
 
 
@@ -317,7 +357,11 @@ public class MainActivity extends AppCompatActivity {
                                     "Inicio correcto",
                                     Toast.LENGTH_LONG
                             ).show();
+                            btnIniciarSesion.setEnabled(true);
 
+                            btnIniciarSesion.setText(
+                                    "INICIAR SESIÓN"
+                            );
 
                         }else{
 
@@ -327,6 +371,13 @@ public class MainActivity extends AppCompatActivity {
                                     "DNI o contraseña incorrectos",
                                     Toast.LENGTH_LONG
                             ).show();
+
+
+                            btnIniciarSesion.setEnabled(true);
+
+                            btnIniciarSesion.setText(
+                                    "INICIAR SESIÓN"
+                            );
 
                         }
 
@@ -339,6 +390,13 @@ public class MainActivity extends AppCompatActivity {
                             Call<Map<String,Object>> call,
                             Throwable t
                     ){
+
+                        btnIniciarSesion.setEnabled(true);
+
+                        btnIniciarSesion.setText(
+                                "INICIAR SESIÓN"
+                        );
+
 
                         Toast.makeText(
                                 MainActivity.this,
