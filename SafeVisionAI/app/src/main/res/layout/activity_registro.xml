@@ -25,7 +25,7 @@
             android:layout_gravity="center_horizontal"
             android:contentDescription="Logo SafeVision AI"
             android:scaleType="fitCenter"
-            android:src="@drawable/safevision_logo" />
+            android:src="@mipmap/ic_launcher" />
 
         <!-- NOMBRE -->
         <TextView
@@ -86,9 +86,7 @@
                     android:textColor="#7895B5"
                     android:textSize="12sp" />
 
-
                 <!-- NOMBRES -->
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -126,9 +124,7 @@
 
                 </com.google.android.material.textfield.TextInputLayout>
 
-
                 <!-- APELLIDOS -->
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -165,9 +161,7 @@
 
                 </com.google.android.material.textfield.TextInputLayout>
 
-
                 <!-- DNI -->
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -205,9 +199,7 @@
 
                 </com.google.android.material.textfield.TextInputLayout>
 
-
                 <!-- TELÉFONO -->
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -233,7 +225,7 @@
                         android:id="@+id/txtTelefono"
                         android:layout_width="match_parent"
                         android:layout_height="54dp"
-                        android:hint="999 999 999"
+                        android:hint="999999999"
                         android:inputType="phone"
                         android:maxLength="9"
                         android:maxLines="1"
@@ -245,9 +237,7 @@
 
                 </com.google.android.material.textfield.TextInputLayout>
 
-
                 <!-- CORREO -->
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -284,9 +274,7 @@
 
                 </com.google.android.material.textfield.TextInputLayout>
 
-
                 <!-- CONTRASEÑA -->
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -323,9 +311,7 @@
 
                 </com.google.android.material.textfield.TextInputLayout>
 
-
                 <!-- CONFIRMAR CONTRASEÑA -->
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -362,9 +348,7 @@
 
                 </com.google.android.material.textfield.TextInputLayout>
 
-
-                <!-- BOTÓN CREAR CUENTA -->
-
+                <!-- BOTÓN -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnRegistrar"
                     android:layout_width="match_parent"
@@ -378,9 +362,7 @@
                     app:backgroundTint="#0A84FF"
                     app:cornerRadius="12dp" />
 
-
                 <!-- VOLVER LOGIN -->
-
                 <TextView
                     android:id="@+id/txtVolverLogin"
                     android:layout_width="wrap_content"
@@ -398,9 +380,7 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-
         <!-- FOOTER -->
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

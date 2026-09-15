@@ -354,14 +354,31 @@ public class MainActivity extends AppCompatActivity {
 
                             Toast.makeText(
                                     MainActivity.this,
-                                    "Inicio correcto",
-                                    Toast.LENGTH_LONG
+                                    "Inicio de sesión correcto",
+                                    Toast.LENGTH_SHORT
                             ).show();
-                            btnIniciarSesion.setEnabled(true);
 
-                            btnIniciarSesion.setText(
-                                    "INICIAR SESIÓN"
+
+// IR A LA PANTALLA DE INICIO
+
+                            Intent intent = new Intent(
+                                    MainActivity.this,
+                                    InicioActivity.class
                             );
+
+
+// BORRAR LOGIN DEL HISTORIAL
+// PARA QUE NO REGRESE CON EL BOTÓN ATRÁS
+
+                            intent.setFlags(
+                                    Intent.FLAG_ACTIVITY_NEW_TASK
+                                            | Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            );
+
+
+                            startActivity(intent);
+
+                            finish();
 
                         }else{
 

@@ -52,5 +52,39 @@ public interface SupabaseApi {
 
             @Query("correo") String correo
     );
+    // =====================================================
+// OBTENER PERFIL DEL SUPERVISOR LOGUEADO
+// =====================================================
+
+    @GET("rest/v1/perfiles")
+    Call<List<Map<String,Object>>> obtenerPerfilUsuario(
+
+            @Header("Authorization")
+            String authorization,
+
+            @Query("select")
+            String select,
+
+            @Query("id")
+            String id
+    );
+
+
+// =====================================================
+// OBTENER TODOS LOS TRABAJADORES
+// =====================================================
+
+    @GET("rest/v1/trabajadores")
+    Call<List<Map<String,Object>>> obtenerTrabajadores(
+
+            @Header("Authorization")
+            String authorization,
+
+            @Query("select")
+            String select,
+
+            @Query("order")
+            String order
+    );
 
 }

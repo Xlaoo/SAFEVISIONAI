@@ -10,7 +10,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center_horizontal"
         android:paddingStart="28dp"
@@ -19,17 +19,15 @@
         android:paddingBottom="30dp">
 
         <!-- LOGO -->
-
         <ImageView
             android:id="@+id/imgLogoLogin"
             android:layout_width="92dp"
             android:layout_height="92dp"
             android:contentDescription="Logo SafeVision AI"
             android:scaleType="fitCenter"
-            android:src="@drawable/safevision_logo" />
+            android:src="@mipmap/ic_launcher" />
 
         <!-- NOMBRE -->
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -41,7 +39,6 @@
             android:textStyle="bold" />
 
         <!-- SUBTÍTULO -->
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -53,7 +50,6 @@
             android:textStyle="bold" />
 
         <!-- TARJETA LOGIN -->
-
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -71,7 +67,6 @@
                 android:padding="22dp">
 
                 <!-- TITULO -->
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -82,7 +77,6 @@
                     android:textStyle="bold" />
 
                 <!-- DNI -->
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -109,11 +103,11 @@
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/txtDniLogin"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
                         android:hint="Ingrese su DNI"
                         android:inputType="number"
                         android:maxLength="8"
-                        android:layout_width="match_parent"
-                        android:layout_height="56dp"
                         android:maxLines="1"
                         android:paddingStart="15dp"
                         android:paddingEnd="15dp"
@@ -124,7 +118,6 @@
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <!-- CONTRASEÑA -->
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -165,7 +158,6 @@
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <!-- BOTÓN -->
-
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnIniciarSesion"
                     android:layout_width="match_parent"
@@ -180,7 +172,6 @@
                     app:cornerRadius="13dp" />
 
                 <!-- OLVIDÉ CONTRASEÑA -->
-
                 <TextView
                     android:id="@+id/txtOlvidePassword"
                     android:layout_width="wrap_content"
@@ -195,7 +186,6 @@
                     android:textSize="13sp" />
 
                 <!-- REGISTRO -->
-
                 <TextView
                     android:id="@+id/txtCrearCuenta"
                     android:layout_width="wrap_content"
@@ -213,7 +203,6 @@
         </com.google.android.material.card.MaterialCardView>
 
         <!-- FOOTER -->
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
