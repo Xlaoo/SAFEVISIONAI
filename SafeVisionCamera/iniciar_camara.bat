@@ -1,7 +1,7 @@
 @echo off
 
-cd /d D:\SafeVisionCamera
+cd /d D:\SAFEVISIONAI\SafeVisionCamera
 
-python servidor_camara.py
+"C:\Users\peruc\AppData\Local\Programs\Python\Python310\python.exe" servidor_camara.py
 
 pause

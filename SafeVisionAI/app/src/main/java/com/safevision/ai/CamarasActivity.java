@@ -5,23 +5,30 @@ import android.os.Bundle;
 import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.TextView;
+
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 public class CamarasActivity extends BaseActivity {
 
     private View cardCamara1;
     private View cardCamara2;
     private View cardCamara3;
+
     private WebView webCamara1;
-    private WebView webCamara2;
-    private WebView webCamara3;
+
     private TextView txtEstadoCamara1;
     private TextView txtEstadoCamara2;
     private TextView txtEstadoCamara3;
 
-    // IP de la PC donde funciona Python
+    // =====================================================
+    // CÁMARA 1 - LAPTOP
+    // =====================================================
+
     private static final String URL_CAMARA_PC =
-            "http://192.168.18.127:5000/";
+            "http://10.226.222.107:5000/";
 
 
     @Override
@@ -30,34 +37,22 @@ public class CamarasActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_camaras);
-        webCamara1 = findViewById(R.id.webCamara1);
-        webCamara2 = findViewById(R.id.webCamara2);
-        webCamara3 = findViewById(R.id.webCamara3);
 
 
-        configurarWebView(webCamara1);
-        configurarWebView(webCamara2);
-        configurarWebView(webCamara3);
+        // =====================================================
+        // CARDS
+        // =====================================================
 
-        // ==========================================
-        // WEBVIEWS
-        // ==========================================
+        cardCamara1 = findViewById(R.id.cardCamara1);
 
-        cardCamara1 =
-                findViewById(R.id.cardCamara1);
+        cardCamara2 = findViewById(R.id.cardCamara2);
 
-
-        cardCamara2 =
-                findViewById(R.id.cardCamara2);
+        cardCamara3 = findViewById(R.id.cardCamara3);
 
 
-        cardCamara3 =
-                findViewById(R.id.cardCamara3);
-
-
-        // ==========================================
+        // =====================================================
         // ESTADOS
-        // ==========================================
+        // =====================================================
 
         txtEstadoCamara1 =
                 findViewById(R.id.txtEstadoCamara1);
@@ -69,28 +64,40 @@ public class CamarasActivity extends BaseActivity {
                 findViewById(R.id.txtEstadoCamara3);
 
 
-        // ==========================================
-        // CONFIGURAR WEBVIEWS
-        // ==========================================
+        // =====================================================
+        // WEBVIEW CÁMARA 1
+        // =====================================================
+
+        webCamara1 =
+                findViewById(R.id.webCamara1);
+
+        configurarWebView(webCamara1);
 
 
+        // =====================================================
+        // CÁMARA 1 - LAPTOP
+        // =====================================================
 
-        // ==========================================
-        // CÁMARA 1 - PC
-        // ==========================================
+        txtEstadoCamara1.setText(
+                "🟡 Comprobando conexión..."
+        );
 
         comprobarEstadoCamara(
                 txtEstadoCamara1,
                 URL_CAMARA_PC
         );
+
+
+        // Mostrar video de la laptop
         webCamara1.loadUrl(
                 URL_CAMARA_PC + "video"
         );
 
 
-        // ==========================================
-        // CÁMARA 2
-        // ==========================================
+        // =====================================================
+        // CÁMARA 2 - CELULAR
+        // =====================================================
+
         txtEstadoCamara2.setText(
                 "🔴 Desconectada"
         );
@@ -100,6 +107,10 @@ public class CamarasActivity extends BaseActivity {
         );
 
 
+        // =====================================================
+        // CÁMARA 3
+        // =====================================================
+
         txtEstadoCamara3.setText(
                 "🔴 Desconectada"
         );
@@ -107,54 +118,63 @@ public class CamarasActivity extends BaseActivity {
         txtEstadoCamara3.setTextColor(
                 0xFFE53935
         );
-        cardCamara1.setOnClickListener(v -> {
 
+
+        // =====================================================
+        // CLICK CÁMARA 1
+        // =====================================================
+
+        cardCamara1.setOnClickListener(v -> {
 
             Intent intent =
                     new Intent(
                             CamarasActivity.this,
                             DetalleCamaraActivity.class
                     );
-
 
             intent.putExtra(
                     "CAMARA",
                     "Producción"
             );
 
-
             intent.putExtra(
                     "URL",
                     URL_CAMARA_PC
             );
 
-
             startActivity(intent);
-
-
         });
-        cardCamara2.setOnClickListener(v -> {
 
+
+        // =====================================================
+        // CLICK CÁMARA 2
+        // =====================================================
+
+        cardCamara2.setOnClickListener(v -> {
 
             Intent intent =
                     new Intent(
                             CamarasActivity.this,
                             DetalleCamaraActivity.class
                     );
-
 
             intent.putExtra(
                     "CAMARA",
                     "Almacén"
             );
 
+            // Aquí posteriormente pondremos
+            // la IP/URL de la cámara del celular.
 
             startActivity(intent);
-
-
         });
-        cardCamara3.setOnClickListener(v -> {
 
+
+        // =====================================================
+        // CLICK CÁMARA 3
+        // =====================================================
+
+        cardCamara3.setOnClickListener(v -> {
 
             Intent intent =
                     new Intent(
@@ -162,22 +182,18 @@ public class CamarasActivity extends BaseActivity {
                             DetalleCamaraActivity.class
                     );
 
-
             intent.putExtra(
                     "CAMARA",
                     "Ingreso"
             );
 
-
             startActivity(intent);
-
-
         });
 
 
-        // ==========================================
+        // =====================================================
         // MENÚ INFERIOR
-        // ==========================================
+        // =====================================================
 
         View navInicio =
                 findViewById(R.id.navInicioCamaras);
@@ -192,16 +208,17 @@ public class CamarasActivity extends BaseActivity {
                 findViewById(R.id.navAjustesCamaras);
 
 
-        // ==========================================
-        // BOTÓN INICIO
-        // ==========================================
+        // =====================================================
+        // INICIO
+        // =====================================================
 
         navInicio.setOnClickListener(v -> {
 
-            Intent intent = new Intent(
-                    CamarasActivity.this,
-                    InicioActivity.class
-            );
+            Intent intent =
+                    new Intent(
+                            CamarasActivity.this,
+                            InicioActivity.class
+                    );
 
             startActivity(intent);
 
@@ -209,50 +226,42 @@ public class CamarasActivity extends BaseActivity {
         });
 
 
-        // ==========================================
-        // BOTÓN CÁMARAS
-        // ==========================================
+        // =====================================================
+        // CÁMARAS
+        // =====================================================
 
         navCamaras.setOnClickListener(v -> {
-
-            // Ya estamos en Cámaras.
-            // No hacemos nada.
+            // Ya estamos en cámaras
         });
 
 
-        // ==========================================
+        // =====================================================
         // ALERTAS
-        // ==========================================
+        // =====================================================
 
         navAlertas.setOnClickListener(v -> {
-
-            // Por ahora no hacemos nada.
-            // Luego conectaremos esta opción
-            // con la pantalla de Alertas.
+            // Se implementará después
         });
 
 
-        // ==========================================
+        // =====================================================
         // AJUSTES
-        // ==========================================
+        // =====================================================
 
         navAjustes.setOnClickListener(v -> {
-
-            // Por ahora no hacemos nada.
-            // Luego conectaremos esta opción
-            // con la pantalla de Ajustes.
+            // Se implementará después
         });
     }
 
 
-    // ==============================================
+    // =====================================================
     // CONFIGURAR WEBVIEW
-    // ==============================================
-    private void configurarWebView(WebView webView){
+    // =====================================================
+
+    private void configurarWebView(WebView webView) {
 
         WebSettings settings =
                 webView.getSettings();
-
 
         settings.setJavaScriptEnabled(true);
 
@@ -262,110 +271,111 @@ public class CamarasActivity extends BaseActivity {
 
         settings.setUseWideViewPort(true);
 
+        settings.setMediaPlaybackRequiresUserGesture(false);
 
+        webView.setWebViewClient(
+                new WebViewClient()
+        );
     }
+
+
+    // =====================================================
+    // COMPROBAR CÁMARA
+    // =====================================================
+
     private void comprobarEstadoCamara(
             TextView estado,
             String url
-    ){
+    ) {
 
         new Thread(() -> {
 
+            HttpURLConnection conexion = null;
 
             try {
 
+                URL direccion =
+                        new URL(url);
 
-                java.net.URL direccion =
-                        new java.net.URL(url);
-
-
-                java.net.HttpURLConnection conexion =
-                        (java.net.HttpURLConnection)
+                conexion =
+                        (HttpURLConnection)
                                 direccion.openConnection();
 
+                conexion.setRequestMethod("GET");
 
                 conexion.setConnectTimeout(3000);
 
-                conexion.connect();
+                conexion.setReadTimeout(3000);
 
+                conexion.connect();
 
                 int codigo =
                         conexion.getResponseCode();
 
 
-
                 runOnUiThread(() -> {
 
-
-                    if(codigo == 200){
-
+                    if (codigo == 200) {
 
                         estado.setText(
                                 "🟢 En línea"
                         );
 
-
                         estado.setTextColor(
                                 0xFF00A85A
                         );
 
-
-                    }else{
-
+                    } else {
 
                         estado.setText(
                                 "🔴 Desconectada"
                         );
 
-
                         estado.setTextColor(
                                 0xFFE53935
                         );
-
                     }
-
-
                 });
 
 
-
-            }catch(Exception e){
-
-
+            } catch (Exception e) {
 
                 runOnUiThread(() -> {
-
 
                     estado.setText(
                             "🔴 Desconectada"
                     );
 
-
                     estado.setTextColor(
                             0xFFE53935
                     );
-
-
                 });
 
+            } finally {
 
+                if (conexion != null) {
+                    conexion.disconnect();
+                }
             }
 
-
-
         }).start();
-
-
     }
 
-    // ==============================================
-    // DESTRUIR WEBVIEWS
-    // ==============================================
+
+    // =====================================================
+    // DESTRUIR
+    // =====================================================
 
     @Override
     protected void onDestroy() {
 
-        super.onDestroy();
+        if (webCamara1 != null) {
 
+            webCamara1.stopLoading();
+
+            webCamara1.destroy();
+        }
+
+        super.onDestroy();
     }
 }
