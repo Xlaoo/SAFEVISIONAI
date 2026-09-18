@@ -16,7 +16,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class NuevaPasswordActivity extends AppCompatActivity {
+public class NuevaPasswordActivity extends BaseActivity {
     private String correoUsuario;
     private EditText txtNuevaPassword;
     private EditText txtConfirmarNuevaPassword;

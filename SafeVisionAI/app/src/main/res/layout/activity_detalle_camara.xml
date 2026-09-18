@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FFFFFF">
+
+
+    <!-- BARRA SUPERIOR -->
+
+    <LinearLayout
+
+        android:layout_width="match_parent"
+
+        android:layout_height="55dp"
+
+        android:gravity="center_vertical"
+
+        android:background="#073A62">
+
+
+        <TextView
+
+            android:id="@+id/btnRegresar"
+
+            android:layout_width="50dp"
+
+            android:layout_height="match_parent"
+
+            android:gravity="center"
+
+            android:text="←"
+
+            android:textSize="32sp"
+
+            android:textColor="#FFFFFF"/>
+
+
+        <TextView
+
+            android:id="@+id/txtTituloCamara"
+
+            android:layout_width="wrap_content"
+
+            android:layout_height="match_parent"
+
+            android:gravity="center_vertical"
+
+            android:text="Cámara"
+
+            android:textSize="20sp"
+
+            android:textStyle="bold"
+
+            android:textColor="#FFFFFF"/>
+
+
+    </LinearLayout>
+
+
+
+    <!-- VIDEO -->
+
+    <WebView
+
+        android:id="@+id/webCamaraDetalle"
+
+        android:layout_width="match_parent"
+
+        android:layout_height="300dp"/>
+
+
+
+    <!-- FECHA Y HORA -->
+
+    <TextView
+
+        android:id="@+id/txtFechaHora"
+
+        android:layout_width="match_parent"
+
+        android:layout_height="45dp"
+
+        android:gravity="center"
+
+        android:text="16/09/2026 21:30:20"
+
+        android:textSize="16sp"
+
+        android:textStyle="bold"
+
+        android:textColor="#333333"/>
+
+
+
+    <!-- ESTADO -->
+
+    <TextView
+
+        android:id="@+id/txtEstadoPersona"
+
+        android:layout_width="match_parent"
+
+        android:layout_height="40dp"
+
+        android:gravity="center"
+
+        android:text="🟢 Persona detectada"
+
+        android:textStyle="bold"
+
+        android:textColor="#00A85A"/>
+
+
+
+</LinearLayout>

@@ -22,7 +22,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import android.util.Log;
-public class RegistroActivity extends AppCompatActivity {
+public class RegistroActivity extends BaseActivity {
 
     private EditText txtNombres;
     private EditText txtApellidos;

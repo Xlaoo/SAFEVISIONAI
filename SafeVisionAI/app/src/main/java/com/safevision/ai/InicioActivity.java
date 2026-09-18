@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,7 +22,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class InicioActivity extends AppCompatActivity {
+public class InicioActivity extends BaseActivity {
 
 
     // ==========================================
@@ -38,8 +39,7 @@ public class InicioActivity extends AppCompatActivity {
     private TextView txtCantidadAlertas;
 
     private MaterialButton btnVerAlertas;
-
-
+    private View navCamaras;
     // ==========================================
     // SUPABASE
     // ==========================================
@@ -83,7 +83,8 @@ public class InicioActivity extends AppCompatActivity {
         btnVerAlertas =
                 findViewById(R.id.btnVerAlertas);
 
-
+        navCamaras =
+                findViewById(R.id.navCamaras);
         // ==========================================
         // SUPABASE
         // ==========================================
@@ -170,7 +171,21 @@ public class InicioActivity extends AppCompatActivity {
             ).show();
 
         });
+        // ==========================================
+// BOTÓN CÁMARAS
+// ==========================================
 
+        navCamaras.setOnClickListener(v -> {
+
+            Intent intent =
+                    new Intent(
+                            InicioActivity.this,
+                            CamarasActivity.class
+                    );
+
+            startActivity(intent);
+
+        });
     }
 
 

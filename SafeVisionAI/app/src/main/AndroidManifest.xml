@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
+        android:usesCleartextTraffic="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
@@ -13,44 +15,36 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SafeVisionAI">
 
-        <!-- LOGIN -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize">
 
             <intent-filter>
-
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
-
             </intent-filter>
 
         </activity>
 
 
-        <!-- INICIO -->
         <activity
             android:name=".InicioActivity"
             android:exported="false" />
 
 
-        <!-- REGISTRO -->
         <activity
             android:name=".RegistroActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
 
-        <!-- RECUPERAR CONTRASEÑA -->
         <activity
             android:name=".RecuperarPasswordActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
 
-        <!-- NUEVA CONTRASEÑA -->
         <activity
             android:name=".NuevaPasswordActivity"
             android:exported="true"
@@ -61,16 +55,25 @@
                 <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
-                    android:scheme="safevisionai"
-                    android:host="reset-password" />
+                    android:host="reset-password"
+                    android:scheme="safevisionai" />
 
             </intent-filter>
 
         </activity>
 
+
+        <activity
+            android:name=".CamarasActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".DetalleCamaraActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

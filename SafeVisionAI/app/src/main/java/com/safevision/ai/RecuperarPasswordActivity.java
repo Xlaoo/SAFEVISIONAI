@@ -23,7 +23,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class RecuperarPasswordActivity extends AppCompatActivity {
+public class RecuperarPasswordActivity extends BaseActivity {
 
     private EditText txtCorreoRecuperar;
     private Button btnEnviarInstrucciones;
