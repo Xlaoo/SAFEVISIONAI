@@ -61,7 +61,7 @@ public class DetalleCamaraActivity extends BaseActivity {
 
         String url =
                 getIntent().getStringExtra("URL");
-
+        System.out.println("URL RECIBIDA: " + url);
 
 
         titulo.setText(
@@ -100,15 +100,34 @@ public class DetalleCamaraActivity extends BaseActivity {
         settings.setLoadWithOverviewMode(true);
 
         settings.setUseWideViewPort(true);
-
+        settings.setBuiltInZoomControls(false);
+        settings.setDisplayZoomControls(false);
+        settings.setMixedContentMode(
+                WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+        );
 
 
         if(url != null){
-
-
-            webCamara.loadUrl(
-                    url + "video"
+            webCamara.setWebViewClient(
+                    new android.webkit.WebViewClient()
             );
+
+            if(url != null && !url.isEmpty()){
+
+
+                webCamara.loadUrl(
+                        url + "video"
+                );
+
+
+            }
+            else{
+
+                titulo.setText(
+                        "Error: URL vacía"
+                );
+
+            }
 
 
         }

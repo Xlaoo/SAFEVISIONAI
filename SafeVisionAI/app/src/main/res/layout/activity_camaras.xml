@@ -73,7 +73,7 @@
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardCamara1"
                 android:layout_width="match_parent"
-                android:layout_height="300dp"
+                android:layout_height="350dp"
                 android:layout_marginBottom="16dp"
                 app:cardBackgroundColor="#FFFFFF"
                 app:cardCornerRadius="20dp"
@@ -110,110 +110,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="1"
-                        android:layout_marginTop="10dp" />
+                        android:layout_marginTop="10dp"
+                        android:background="#000000"/>
                 </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
-
-
-            <!-- ================================================= -->
-            <!-- CÁMARA 2 -->
-            <!-- ================================================= -->
-
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardCamara2"
-                android:layout_width="match_parent"
-                android:layout_height="300dp"
-                android:layout_marginBottom="16dp"
-                app:cardBackgroundColor="#FFFFFF"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="2dp"
-                app:strokeColor="#DDE6ED"
-                app:strokeWidth="1dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:padding="12dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="CÁMARA 2 - ALMACÉN"
-                        android:textColor="#17324A"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/txtEstadoCamara2"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="3dp"
-                        android:text="🟡 Pendiente de conexión"
-                        android:textColor="#D99500"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
-
-                    <WebView
-                        android:id="@+id/webCamara2"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="1"
-                        android:layout_marginTop="10dp" />
-
-                </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
-
-
-            <!-- ================================================= -->
-            <!-- CÁMARA 3 -->
-            <!-- ================================================= -->
-
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardCamara3"
-                android:layout_width="match_parent"
-                android:layout_height="300dp"
-                app:cardBackgroundColor="#FFFFFF"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="2dp"
-                app:strokeColor="#DDE6ED"
-                app:strokeWidth="1dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:padding="12dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="CÁMARA 3 - INGRESO"
-                        android:textColor="#17324A"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/txtEstadoCamara3"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="3dp"
-                        android:text="🟡 Pendiente de conexión"
-                        android:textColor="#D99500"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
-
-                    <WebView
-                        android:id="@+id/webCamara3"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="1"
-                        android:layout_marginTop="10dp" />
-
-                </LinearLayout>
-
 
             </com.google.android.material.card.MaterialCardView>
 

@@ -2,60 +2,122 @@ from flask import Flask, Response
 import cv2
 import socket
 import atexit
+import threading
+import time
 
 
 app = Flask(__name__)
 
-
-# ==========================================================
-# CONFIGURACIÓN
-# ==========================================================
-
 PUERTO = 5000
 
 
-# ==========================================================
-# CÁMARA USB / LAPTOP
-# ==========================================================
+# =========================
+# CAMARA
+# =========================
 
 camara = cv2.VideoCapture(1)
 
-
-# Mejor calidad y estabilidad
-camara.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-camara.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+camara.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+camara.set(cv2.CAP_PROP_FRAME_HEIGHT, 360)
 
 
-if not camara.isOpened():
-
-    print("ERROR: No se pudo abrir la cámara.")
-
+if camara.isOpened():
+    print("Cámara iniciada correctamente")
 else:
-
-    print("Cámara iniciada correctamente.")
-
+    print("ERROR cámara")
 
 
-# ==========================================================
-# CERRAR CÁMARA AL FINALIZAR
-# ==========================================================
+frame_actual = None
+bloqueo = threading.Lock()
+activo = True
+
+
+
+# =========================
+# CAPTURA CAMARA
+# =========================
+
+def iniciar_camara():
+
+    global frame_actual, activo
+
+
+    cv2.namedWindow(
+        "SafeVisionAI - Camara",
+        cv2.WINDOW_NORMAL
+    )
+
+    cv2.resizeWindow(
+        "SafeVisionAI - Camara",
+        640,
+        360
+    )
+
+
+    while activo:
+
+
+        ok, frame = camara.read()
+
+
+        if ok:
+
+
+            with bloqueo:
+                frame_actual = frame.copy()
+
+
+            cv2.imshow(
+                "SafeVisionAI - Camara",
+                frame
+            )
+
+
+            # X o tecla Q
+            if cv2.waitKey(1) & 0xFF == ord("q"):
+
+                activo = False
+
+                break
+
+
+
+    camara.release()
+    cv2.destroyAllWindows()
+
+
+
+threading.Thread(
+    target=iniciar_camara,
+    daemon=True
+).start()
+
+
+
+# =========================
+# CERRAR
+# =========================
 
 @atexit.register
-def cerrar_camara():
+def cerrar():
 
-    if camara:
+    global activo
 
-        camara.release()
+    activo = False
 
-    print("Cámara liberada.")
+    camara.release()
+
+    cv2.destroyAllWindows()
+
+    print("Cámara cerrada")
 
 
 
-# ==========================================================
-# OBTENER IP LOCAL
-# ==========================================================
+# =========================
+# IP
+# =========================
 
-def obtener_ip_local():
+def obtener_ip():
 
     try:
 
@@ -68,269 +130,132 @@ def obtener_ip_local():
             ("8.8.8.8",80)
         )
 
-
         ip = s.getsockname()[0]
-
 
         s.close()
 
-
         return ip
 
-
-    except Exception:
+    except:
 
         return "127.0.0.1"
 
 
 
+# =========================
+# STREAM
+# =========================
 
-# ==========================================================
-# GENERAR VIDEO
-# ==========================================================
+def video_stream():
 
-def generar_video():
-
-
-    while True:
+    while activo:
 
 
-        correcto, frame = camara.read()
+        with bloqueo:
 
+            if frame_actual is None:
+                continue
 
-
-        if not correcto:
-
-            print("No se pudo leer cámara")
-
-            continue
+            frame = frame_actual.copy()
 
 
 
-        # Convertir a JPG
-
-        correcto, buffer = cv2.imencode(
-
+        ok, buffer = cv2.imencode(
             ".jpg",
-
-            frame,
-
-            [
-                cv2.IMWRITE_JPEG_QUALITY,
-                80
-            ]
-
+            frame
         )
 
 
+        if ok:
 
-        if not correcto:
+            yield (
 
-            continue
+                b"--frame\r\n"
+                b"Content-Type: image/jpeg\r\n\r\n"
+                + buffer.tobytes()
+                + b"\r\n"
+
+            )
 
 
-
-        frame_bytes = buffer.tobytes()
-
-
-
-        yield (
-
-            b"--frame\r\n"
-
-            b"Content-Type: image/jpeg\r\n"
-
-            b"Content-Length: " +
-
-            str(len(frame_bytes)).encode() +
-
-            b"\r\n\r\n"
-
-            +
-
-            frame_bytes
-
-            +
-
-            b"\r\n"
-
-        )
+        time.sleep(0.03)
 
 
 
 
-# ==========================================================
-# PAGINA PRINCIPAL
-# ==========================================================
+# =========================
+# PAGINA
+# =========================
 
 @app.route("/")
 def inicio():
 
-
-    ip = obtener_ip_local()
-
-
-
     return f"""
 
-    <!DOCTYPE html>
+<html>
 
-    <html>
+<body style="background:black;color:white;text-align:center">
 
-    <head>
+<h2>SafeVisionAI Cámara</h2>
 
-        <meta charset="UTF-8">
+<img src="/video" width="640">
 
-        <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
+</body>
 
+</html>
 
-        <title>SafeVisionAI</title>
-
-
-        <style>
+"""
 
 
-        body{{
-
-            background:#111;
-
-            color:white;
-
-            text-align:center;
-
-            font-family:Arial;
-
-        }}
-
-
-        img{{
-
-            width:100%;
-
-            max-width:900px;
-
-        }}
-
-
-        </style>
-
-
-    </head>
-
-
-    <body>
-
-
-        <h1>
-        SafeVisionAI - Cámara activa
-        </h1>
-
-
-        <p>
-        Servidor conectado
-        </p>
-
-
-        <p>
-
-        IP:
-        {ip}:{PUERTO}
-
-        </p>
-
-
-
-        <img src="/video">
-
-
-    </body>
-
-
-    </html>
-
-    """
-
-
-
-
-# ==========================================================
-# STREAM VIDEO
-# ==========================================================
 
 @app.route("/video")
 def video():
 
-
     return Response(
-
-        generar_video(),
-
+        video_stream(),
         mimetype=
         "multipart/x-mixed-replace; boundary=frame"
-
     )
 
 
 
+@app.route("/info")
+def info():
 
-# ==========================================================
-# INICIAR SERVIDOR
-# ==========================================================
+    return {
+
+        "nombre":"SafeVisionAI_CAMERA",
+        "tipo":"camara",
+        "estado":"activo"
+
+    }
+
+
+
+# =========================
+# INICIO
+# =========================
 
 if __name__ == "__main__":
 
 
-
-    ip = obtener_ip_local()
-
+    ip = obtener_ip()
 
 
+    print("======================")
+    print(" SAFEVISIONAI CAMERA")
+    print("======================")
     print()
-
-    print("================================")
-
-    print(" SAFEVISIONAI - CAMARA ")
-
-    print("================================")
-
-    print()
-
-    print("IP:")
-
-    print(ip)
-
-
-    print()
-
-    print("ABRIR CELULAR:")
-
+    print("CELULAR:")
     print(
-        f"http://{ip}:{PUERTO}/"
+        f"http://{ip}:5000"
     )
-
     print()
-
-    print("VIDEO:")
-
-    print(
-        f"http://{ip}:{PUERTO}/video"
-    )
-
-
-    print()
-
-    print("================================")
-
-
+    print("======================")
 
 
     app.run(
-
         host="0.0.0.0",
-
-        port=PUERTO,
-
+        port=5000,
         threaded=True
-
     )

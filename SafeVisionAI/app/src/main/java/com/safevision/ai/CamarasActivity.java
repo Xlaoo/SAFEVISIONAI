@@ -14,21 +14,16 @@ import java.net.URL;
 public class CamarasActivity extends BaseActivity {
 
     private View cardCamara1;
-    private View cardCamara2;
-    private View cardCamara3;
 
     private WebView webCamara1;
 
     private TextView txtEstadoCamara1;
-    private TextView txtEstadoCamara2;
-    private TextView txtEstadoCamara3;
 
     // =====================================================
     // CÁMARA 1 - LAPTOP
     // =====================================================
 
-    private static final String URL_CAMARA_PC =
-            "http://10.226.222.107:5000/";
+    private String URL_CAMARA_PC = "";
 
 
     @Override
@@ -45,9 +40,6 @@ public class CamarasActivity extends BaseActivity {
 
         cardCamara1 = findViewById(R.id.cardCamara1);
 
-        cardCamara2 = findViewById(R.id.cardCamara2);
-
-        cardCamara3 = findViewById(R.id.cardCamara3);
 
 
         // =====================================================
@@ -57,11 +49,7 @@ public class CamarasActivity extends BaseActivity {
         txtEstadoCamara1 =
                 findViewById(R.id.txtEstadoCamara1);
 
-        txtEstadoCamara2 =
-                findViewById(R.id.txtEstadoCamara2);
 
-        txtEstadoCamara3 =
-                findViewById(R.id.txtEstadoCamara3);
 
 
         // =====================================================
@@ -79,45 +67,64 @@ public class CamarasActivity extends BaseActivity {
         // =====================================================
 
         txtEstadoCamara1.setText(
-                "🟡 Comprobando conexión..."
-        );
-
-        comprobarEstadoCamara(
-                txtEstadoCamara1,
-                URL_CAMARA_PC
+                "🟡 Buscando cámara..."
         );
 
 
-        // Mostrar video de la laptop
-        webCamara1.loadUrl(
-                URL_CAMARA_PC + "video"
+        CameraScanner.buscarCamara(
+                this,
+                new CameraScanner.Callback() {
+
+
+                    @Override
+                    public void encontrada(String url) {
+
+
+                        URL_CAMARA_PC = url;
+                        System.out.println("CAMARA ENCONTRADA: " + url);
+
+                        runOnUiThread(() -> {
+
+
+                            txtEstadoCamara1.setText(
+                                    "🟢 Cámara encontrada"
+                            );
+
+
+                            webCamara1.loadUrl(
+                                    url + "video"
+                            );
+
+
+                        });
+
+
+                    }
+
+
+                    @Override
+                    public void error() {
+
+
+                        runOnUiThread(() -> {
+
+
+                            txtEstadoCamara1.setText(
+                                    "🔴 Cámara no encontrada"
+                            );
+
+
+                        });
+
+
+                    }
+
+
+                }
         );
 
 
-        // =====================================================
-        // CÁMARA 2 - CELULAR
-        // =====================================================
 
-        txtEstadoCamara2.setText(
-                "🔴 Desconectada"
-        );
-
-        txtEstadoCamara2.setTextColor(
-                0xFFE53935
-        );
-
-
-        // =====================================================
-        // CÁMARA 3
-        // =====================================================
-
-        txtEstadoCamara3.setText(
-                "🔴 Desconectada"
-        );
-
-        txtEstadoCamara3.setTextColor(
-                0xFFE53935
-        );
 
 
         // =====================================================
@@ -126,69 +133,48 @@ public class CamarasActivity extends BaseActivity {
 
         cardCamara1.setOnClickListener(v -> {
 
+
+            if(URL_CAMARA_PC.isEmpty()){
+
+
+                txtEstadoCamara1.setText(
+                        "Espere, buscando cámara..."
+                );
+
+
+                return;
+
+            }
+
+
+
             Intent intent =
                     new Intent(
                             CamarasActivity.this,
                             DetalleCamaraActivity.class
                     );
+
 
             intent.putExtra(
                     "CAMARA",
                     "Producción"
             );
 
+
             intent.putExtra(
                     "URL",
                     URL_CAMARA_PC
             );
 
+
             startActivity(intent);
+
+
         });
 
 
-        // =====================================================
-        // CLICK CÁMARA 2
-        // =====================================================
-
-        cardCamara2.setOnClickListener(v -> {
-
-            Intent intent =
-                    new Intent(
-                            CamarasActivity.this,
-                            DetalleCamaraActivity.class
-                    );
-
-            intent.putExtra(
-                    "CAMARA",
-                    "Almacén"
-            );
-
-            // Aquí posteriormente pondremos
-            // la IP/URL de la cámara del celular.
-
-            startActivity(intent);
-        });
 
 
-        // =====================================================
-        // CLICK CÁMARA 3
-        // =====================================================
-
-        cardCamara3.setOnClickListener(v -> {
-
-            Intent intent =
-                    new Intent(
-                            CamarasActivity.this,
-                            DetalleCamaraActivity.class
-                    );
-
-            intent.putExtra(
-                    "CAMARA",
-                    "Ingreso"
-            );
-
-            startActivity(intent);
-        });
 
 
         // =====================================================
