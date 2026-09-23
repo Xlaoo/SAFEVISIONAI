@@ -32,7 +32,7 @@ public class CamarasActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_camaras);
-
+        configurarMenuInferior();
 
         // =====================================================
         // CARDS
@@ -172,71 +172,6 @@ public class CamarasActivity extends BaseActivity {
 
         });
 
-
-
-
-
-
-        // =====================================================
-        // MENÚ INFERIOR
-        // =====================================================
-
-        View navInicio =
-                findViewById(R.id.navInicioCamaras);
-
-        View navCamaras =
-                findViewById(R.id.navCamarasActivo);
-
-        View navAlertas =
-                findViewById(R.id.navAlertasCamaras);
-
-        View navAjustes =
-                findViewById(R.id.navAjustesCamaras);
-
-
-        // =====================================================
-        // INICIO
-        // =====================================================
-
-        navInicio.setOnClickListener(v -> {
-
-            Intent intent =
-                    new Intent(
-                            CamarasActivity.this,
-                            InicioActivity.class
-                    );
-
-            startActivity(intent);
-
-            finish();
-        });
-
-
-        // =====================================================
-        // CÁMARAS
-        // =====================================================
-
-        navCamaras.setOnClickListener(v -> {
-            // Ya estamos en cámaras
-        });
-
-
-        // =====================================================
-        // ALERTAS
-        // =====================================================
-
-        navAlertas.setOnClickListener(v -> {
-            // Se implementará después
-        });
-
-
-        // =====================================================
-        // AJUSTES
-        // =====================================================
-
-        navAjustes.setOnClickListener(v -> {
-            // Se implementará después
-        });
     }
 
 

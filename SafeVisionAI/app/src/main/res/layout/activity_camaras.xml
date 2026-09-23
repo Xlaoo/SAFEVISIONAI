@@ -141,7 +141,7 @@
         <!-- INICIO -->
 
         <LinearLayout
-            android:id="@+id/navInicioCamaras"
+            android:id="@+id/navInicio"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -171,7 +171,7 @@
         <!-- CÁMARAS -->
 
         <LinearLayout
-            android:id="@+id/navCamarasActivo"
+            android:id="@+id/navCamaras"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -200,7 +200,7 @@
         <!-- ALERTAS -->
 
         <LinearLayout
-            android:id="@+id/navAlertasCamaras"
+            android:id="@+id/navAlertas"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -230,7 +230,7 @@
         <!-- AJUSTES -->
 
         <LinearLayout
-            android:id="@+id/navAjustesCamaras"
+            android:id="@+id/navAjustes"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"

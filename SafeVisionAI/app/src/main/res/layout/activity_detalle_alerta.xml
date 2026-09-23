@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+
+    <!-- BARRA SUPERIOR SOLO EN DETALLE -->
+
+    <LinearLayout
+
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="#073A62"
+        android:gravity="center_vertical">
+
+
+        <TextView
+            android:id="@+id/btnRegresarDetalle"
+
+            android:layout_width="60dp"
+            android:layout_height="match_parent"
+
+            android:text="←"
+
+            android:textSize="32sp"
+
+            android:textColor="#FFFFFF"
+
+            android:gravity="center"/>
+
+
+
+        <TextView
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:text="Detalle de alerta"
+
+            android:textColor="#FFFFFF"
+
+            android:textSize="20sp"
+
+            android:textStyle="bold"/>
+
+
+    </LinearLayout>
+
+
+
+    <TextView
+        android:id="@+id/txtTituloDetalle"
+
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:text="Alerta"
+
+        android:textSize="24sp"
+
+        android:textStyle="bold"
+
+        android:padding="20dp"/>
+
+
+
+    <TextView
+        android:id="@+id/txtFechaDetalle"
+
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:text="Fecha"
+
+        android:textSize="16sp"
+
+        android:paddingHorizontal="20dp"/>
+
+
+
+    <TextView
+        android:id="@+id/txtAreaDetalle"
+
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:text="Área"
+
+        android:textSize="16sp"
+
+        android:padding="20dp"/>
+
+
+
+    <Button
+        android:id="@+id/btnRegistrarAccion"
+
+        android:layout_width="match_parent"
+
+        android:layout_height="wrap_content"
+
+        android:text="Registrar acción"
+
+        android:layout_margin="20dp"/>
+
+
+</LinearLayout>

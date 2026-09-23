@@ -74,6 +74,12 @@
         <activity
             android:name=".DetalleCamaraActivity"
             android:exported="false" />
+        <activity
+            android:name=".AlertasActivity"
+            android:exported="false" />
+        <activity
+            android:name=".DetalleAlertaActivity"
+            android:exported="false"/>
     </application>
 
 </manifest>

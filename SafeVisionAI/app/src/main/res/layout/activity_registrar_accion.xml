@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- TITULO -->
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Registrar acción"
+            android:textColor="#073A62"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="24dp"/>
+
+
+        <!-- DNI -->
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="DNI del trabajador"
+            android:textColor="#073A62"
+            android:textSize="15sp"
+            android:textStyle="bold"/>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="6dp">
+
+            <EditText
+                android:id="@+id/edtDni"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_weight="1"
+                android:hint="Ingrese DNI"
+                android:inputType="number"
+                android:maxLength="8"
+                android:padding="12dp"/>
+
+            <Button
+                android:id="@+id/btnVerificarDni"
+                android:layout_width="110dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="8dp"
+                android:text="Verificar"
+                android:textAllCaps="false"/>
+
+        </LinearLayout>
+
+
+        <!-- ESTADO -->
+
+        <TextView
+            android:id="@+id/txtEstadoDni"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text=""
+            android:textSize="14sp"/>
+
+
+        <!-- NOMBRE -->
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="Nombre"
+            android:textColor="#073A62"
+            android:textStyle="bold"/>
+
+        <EditText
+            android:id="@+id/edtNombre"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginTop="6dp"
+            android:hint="Nombre"
+            android:padding="12dp"/>
+
+
+        <!-- APELLIDO -->
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:text="Apellido"
+            android:textColor="#073A62"
+            android:textStyle="bold"/>
+
+        <EditText
+            android:id="@+id/edtApellido"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginTop="6dp"
+            android:hint="Apellido"
+            android:padding="12dp"/>
+
+
+        <!-- AREA -->
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:text="Área"
+            android:textColor="#073A62"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/txtArea"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginTop="6dp"
+            android:background="#F1F4F7"
+            android:gravity="center_vertical"
+            android:padding="12dp"
+            android:text="Producción"
+            android:textColor="#333333"/>
+
+
+        <!-- BOTON REGISTRAR TRABAJADOR -->
+
+        <Button
+            android:id="@+id/btnRegistrarTrabajador"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginTop="14dp"
+            android:text="Registrar trabajador"
+            android:textAllCaps="false"
+            android:visibility="gone"/>
+
+
+        <!-- IMPLEMENTO -->
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:text="Implemento"
+            android:textColor="#073A62"
+            android:textSize="15sp"
+            android:textStyle="bold"/>
+
+        <Spinner
+            android:id="@+id/spinnerImplemento"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginTop="6dp"/>
+
+
+        <!-- ACCION -->
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Acción"
+            android:textColor="#073A62"
+            android:textSize="15sp"
+            android:textStyle="bold"/>
+
+        <Spinner
+            android:id="@+id/spinnerAccion"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginTop="6dp"/>
+
+
+        <!-- OBSERVACION -->
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Observación"
+            android:textColor="#073A62"
+            android:textSize="15sp"
+            android:textStyle="bold"/>
+
+        <EditText
+            android:id="@+id/edtObservacion"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:layout_marginTop="6dp"
+            android:background="#F1F4F7"
+            android:gravity="top"
+            android:hint="Ingrese una observación"
+            android:padding="14dp"
+            android:textColor="#333333"
+            android:textColorHint="#777777"/>
+
+
+        <!-- BOTONES -->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnCancelar"
+                android:layout_width="0dp"
+                android:layout_height="55dp"
+                android:layout_weight="1"
+                android:text="Cancelar"
+                android:textAllCaps="false"/>
+
+            <Space
+                android:layout_width="12dp"
+                android:layout_height="1dp"/>
+
+            <Button
+                android:id="@+id/btnAplicar"
+                android:layout_width="0dp"
+                android:layout_height="55dp"
+                android:layout_weight="1"
+                android:text="Aplicar"
+                android:textAllCaps="false"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>

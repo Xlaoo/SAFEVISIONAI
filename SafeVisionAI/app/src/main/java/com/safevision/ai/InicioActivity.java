@@ -40,6 +40,7 @@ public class InicioActivity extends BaseActivity {
 
     private MaterialButton btnVerAlertas;
     private View navCamaras;
+    private View navAlertas;
     // ==========================================
     // SUPABASE
     // ==========================================
@@ -56,7 +57,7 @@ public class InicioActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_inicio);
-
+        configurarMenuInferior();
         ocultarBarraNavegacion();
         // ==========================================
         // CONECTAR XML
@@ -85,6 +86,20 @@ public class InicioActivity extends BaseActivity {
 
         navCamaras =
                 findViewById(R.id.navCamaras);
+        navAlertas =
+                findViewById(R.id.navAlertas);
+
+        navAlertas.setOnClickListener(v -> {
+
+            Intent intent =
+                    new Intent(
+                            InicioActivity.this,
+                            AlertasActivity.class
+                    );
+
+            startActivity(intent);
+
+        });
         // ==========================================
         // SUPABASE
         // ==========================================
@@ -164,11 +179,13 @@ public class InicioActivity extends BaseActivity {
 
         btnVerAlertas.setOnClickListener(v -> {
 
-            Toast.makeText(
-                    InicioActivity.this,
-                    "La pantalla de alertas será el siguiente módulo",
-                    Toast.LENGTH_SHORT
-            ).show();
+            Intent intent =
+                    new Intent(
+                            InicioActivity.this,
+                            AlertasActivity.class
+                    );
+
+            startActivity(intent);
 
         });
         // ==========================================
