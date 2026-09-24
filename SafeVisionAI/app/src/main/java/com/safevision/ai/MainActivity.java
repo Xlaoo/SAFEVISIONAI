@@ -1,5 +1,9 @@
 package com.safevision.ai;
+import android.Manifest;
+import android.content.pm.PackageManager;
 
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
@@ -30,9 +34,18 @@ public class MainActivity extends BaseActivity {
     private EditText txtDniLogin;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+
+        // ==========================================
+        // SERVICIO DE ALERTAS
+        // ==========================================
+
+        pedirPermisoNotificaciones();
+
+        iniciarServicioAlertas();
 
         // ==========================================
         // CONECTAR CONTROLES XML
@@ -427,5 +440,61 @@ public class MainActivity extends BaseActivity {
                 });
 
 
+    }
+    // =====================================================
+// PERMISO DE NOTIFICACIONES
+// =====================================================
+
+    private void pedirPermisoNotificaciones() {
+
+        if (
+                android.os.Build.VERSION.SDK_INT >=
+                        android.os.Build.VERSION_CODES.TIRAMISU
+        ) {
+
+            if (
+                    ContextCompat.checkSelfPermission(
+                            this,
+                            Manifest.permission.POST_NOTIFICATIONS
+                    )
+                            != PackageManager.PERMISSION_GRANTED
+            ) {
+
+                ActivityCompat.requestPermissions(
+                        this,
+                        new String[]{
+                                Manifest.permission.POST_NOTIFICATIONS
+                        },
+                        200
+                );
+            }
+        }
+    }
+
+
+// =====================================================
+// INICIAR SERVICIO DE ALERTAS
+// =====================================================
+
+    private void iniciarServicioAlertas() {
+
+        Intent intent =
+                new Intent(
+                        this,
+                        AlertaNotificationService.class
+                );
+
+
+        if (
+                android.os.Build.VERSION.SDK_INT >=
+                        android.os.Build.VERSION_CODES.O
+        ) {
+
+            startForegroundService(intent);
+
+        } else {
+
+            startService(intent);
+        }
     }
 }

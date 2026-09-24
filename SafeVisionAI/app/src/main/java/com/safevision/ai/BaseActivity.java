@@ -2,28 +2,32 @@ package com.safevision.ai;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.view.View;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 public class BaseActivity extends AppCompatActivity {
 
+    // Evita múltiples pulsaciones rápidas
+    private static long ultimoClickNavegacion = 0;
+
+    // Tiempo mínimo entre pulsaciones
+    private static final long TIEMPO_BLOQUEO = 700;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
 
         ocultarBotonesSistema();
     }
 
 
-
-
-
-
-
-
+    // =========================================================
+    // OCULTAR BOTONES DEL SISTEMA
+    // =========================================================
 
     protected void ocultarBotonesSistema() {
 
@@ -42,87 +46,158 @@ public class BaseActivity extends AppCompatActivity {
                                 View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                                 |
                                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                );
+    }
 
+
+    // =========================================================
+    // CONTROL DE DOBLE CLIC
+    // =========================================================
+
+    private boolean puedeNavegar() {
+
+        long ahora = SystemClock.elapsedRealtime();
+
+        if (ahora - ultimoClickNavegacion < TIEMPO_BLOQUEO) {
+
+            return false;
+        }
+
+        ultimoClickNavegacion = ahora;
+
+        return true;
+    }
+
+
+    // =========================================================
+    // NAVEGACIÓN SEGURA
+    // =========================================================
+
+    private void navegarA(Class<?> actividad) {
+
+        // Si ya estamos en esa pantalla, NO hacemos nada
+        if (getClass().equals(actividad)) {
+            return;
+        }
+
+
+        // Evitar múltiples pulsaciones rápidas
+        if (!puedeNavegar()) {
+            return;
+        }
+
+
+        Intent intent =
+                new Intent(
+                        this,
+                        actividad
                 );
 
+
+        intent.addFlags(
+                Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        |
+                        Intent.FLAG_ACTIVITY_SINGLE_TOP
+        );
+
+
+        startActivity(intent);
+
+        // Animación suave
+        overridePendingTransition(
+                android.R.anim.fade_in,
+                android.R.anim.fade_out
+        );
+
+        finish();
     }
-    protected void configurarMenuInferior(){
-
-        View navInicio = findViewById(R.id.navInicio);
-        View navCamaras = findViewById(R.id.navCamaras);
-        View navAlertas = findViewById(R.id.navAlertas);
-        View navAjustes = findViewById(R.id.navAjustes);
 
 
-        if(navInicio != null){
+    // =========================================================
+    // MENÚ INFERIOR
+    // =========================================================
+
+    protected void configurarMenuInferior() {
+
+        View navInicio =
+                findViewById(R.id.navInicio);
+
+        View navCamaras =
+                findViewById(R.id.navCamaras);
+
+        View navAlertas =
+                findViewById(R.id.navAlertas);
+
+        View navAjustes =
+                findViewById(R.id.navAjustes);
+
+
+        // =====================================================
+        // INICIO
+        // =====================================================
+
+        if (navInicio != null) {
 
             navInicio.setOnClickListener(v -> {
 
-                Intent intent = new Intent(
-                        this,
+                navegarA(
                         InicioActivity.class
                 );
 
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
-                finish();
-
             });
-
         }
 
 
-        if(navCamaras != null){
+        // =====================================================
+        // CÁMARAS
+        // =====================================================
+
+        if (navCamaras != null) {
 
             navCamaras.setOnClickListener(v -> {
 
-                Intent intent = new Intent(
-                        this,
+                navegarA(
                         CamarasActivity.class
                 );
 
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
-                finish();
-
             });
-
         }
 
 
+        // =====================================================
+        // ALERTAS
+        // =====================================================
 
-        if(navAlertas != null){
+        if (navAlertas != null) {
 
             navAlertas.setOnClickListener(v -> {
 
-                Intent intent = new Intent(
-                        this,
+                navegarA(
                         AlertasActivity.class
                 );
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
-                finish();
 
             });
-
         }
 
 
+        // =====================================================
+        // AJUSTES
+        // =====================================================
 
-        if(navAjustes != null){
+        if (navAjustes != null) {
 
             navAjustes.setOnClickListener(v -> {
 
-
-                // pendiente ajustes
-
+                // Pendiente implementar Ajustes
 
             });
-
         }
-
     }
 
+
+    // =========================================================
+    // MANTENER PANTALLA COMPLETA
+    // =========================================================
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
@@ -130,13 +205,10 @@ public class BaseActivity extends AppCompatActivity {
         super.onWindowFocusChanged(hasFocus);
 
 
-        if(hasFocus){
+        if (hasFocus) {
 
             ocultarBotonesSistema();
 
         }
-
     }
-
-
 }

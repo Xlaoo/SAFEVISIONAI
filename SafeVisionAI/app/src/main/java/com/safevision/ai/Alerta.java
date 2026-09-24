@@ -15,7 +15,10 @@ public class Alerta {
     private boolean chaleco;
 
     private String estado;
+
     private String imagen;
+    private String imagenNormal;
+    private String imagenZoom;
 
 
     public Alerta(
@@ -28,7 +31,9 @@ public class Alerta {
             boolean casco,
             boolean chaleco,
             String estado,
-            String imagen
+            String imagen,
+            String imagenNormal,
+            String imagenZoom
     ) {
 
         this.id = id;
@@ -44,7 +49,10 @@ public class Alerta {
         this.chaleco = chaleco;
 
         this.estado = estado;
+
         this.imagen = imagen;
+        this.imagenNormal = imagenNormal;
+        this.imagenZoom = imagenZoom;
     }
 
 
@@ -95,5 +103,15 @@ public class Alerta {
 
     public String getImagen() {
         return imagen;
+    }
+
+
+    public String getImagenNormal() {
+        return imagenNormal;
+    }
+
+
+    public String getImagenZoom() {
+        return imagenZoom;
     }
 }

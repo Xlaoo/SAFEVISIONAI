@@ -1,6 +1,5 @@
 package com.safevision.ai;
 
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,18 +7,24 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
-
-public class AlertaAdapter extends RecyclerView.Adapter<AlertaAdapter.ViewHolder> {
-
+public class AlertaAdapter
+        extends RecyclerView.Adapter<AlertaAdapter.ViewHolder> {
 
     private ArrayList<Alerta> lista;
 
     private OnAlertaClick listener;
 
+    private OnEliminarAlertaListener eliminarListener;
+
+
+    // =========================================================
+    // CLICK ALERTA
+    // =========================================================
 
     public interface OnAlertaClick {
 
@@ -28,50 +33,67 @@ public class AlertaAdapter extends RecyclerView.Adapter<AlertaAdapter.ViewHolder
     }
 
 
+    // =========================================================
+    // ELIMINAR ALERTA
+    // =========================================================
 
-    public AlertaAdapter(
-            ArrayList<Alerta> lista,
-            OnAlertaClick listener
-    ){
+    public interface OnEliminarAlertaListener {
 
-        this.lista = lista;
-        this.listener = listener;
+        void onEliminar(Alerta alerta, int position);
 
     }
 
 
+    // =========================================================
+    // CONSTRUCTOR
+    // =========================================================
 
+    public AlertaAdapter(
+            ArrayList<Alerta> lista,
+            OnAlertaClick listener,
+            OnEliminarAlertaListener eliminarListener
+    ) {
+
+        this.lista = lista;
+
+        this.listener = listener;
+
+        this.eliminarListener = eliminarListener;
+    }
+
+
+    // =========================================================
+    // CREAR VISTA
+    // =========================================================
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(
             @NonNull ViewGroup parent,
             int viewType
-    ){
+    ) {
 
-
-        View vista = LayoutInflater.from(parent.getContext())
-                .inflate(
-                        R.layout.item_alerta,
-                        parent,
-                        false
-                );
-
+        View vista =
+                LayoutInflater.from(parent.getContext())
+                        .inflate(
+                                R.layout.item_alerta,
+                                parent,
+                                false
+                        );
 
         return new ViewHolder(vista);
-
     }
 
 
-
-
+    // =========================================================
+    // MOSTRAR ALERTA
+    // =========================================================
 
     @Override
     public void onBindViewHolder(
             @NonNull ViewHolder holder,
             int position
-    ){
-
+    ) {
 
         Alerta alerta = lista.get(position);
 
@@ -91,43 +113,97 @@ public class AlertaAdapter extends RecyclerView.Adapter<AlertaAdapter.ViewHolder
         );
 
 
+        // =====================================================
+        // ABRIR DETALLE
+        // =====================================================
 
         holder.itemView.setOnClickListener(v -> {
 
-            listener.onClick(alerta);
+            if (listener != null) {
+
+                listener.onClick(alerta);
+
+            }
 
         });
 
 
+        // =====================================================
+        // PAPELERA
+        // =====================================================
+
+        holder.btnEliminar.setOnClickListener(v -> {
+
+            new AlertDialog.Builder(
+                    holder.itemView.getContext()
+            )
+
+                    .setTitle("Eliminar alerta")
+
+                    .setMessage(
+                            "¿Deseas eliminar esta alerta de forma permanente?"
+                    )
+
+                    .setNegativeButton(
+                            "Cancelar",
+                            null
+                    )
+
+                    .setPositiveButton(
+                            "Eliminar",
+                            (dialog, which) -> {
+
+                                if (eliminarListener != null) {
+
+                                    eliminarListener.onEliminar(
+                                            alerta,
+                                            holder.getBindingAdapterPosition()
+                                    );
+                                }
+
+                            }
+                    )
+
+                    .show();
+
+        });
+
     }
 
 
-
-
+    // =========================================================
+    // CANTIDAD
+    // =========================================================
 
     @Override
-    public int getItemCount(){
+    public int getItemCount() {
 
         return lista.size();
 
     }
 
 
+    // =========================================================
+    // VIEW HOLDER
+    // =========================================================
 
-
-
-    public static class ViewHolder extends RecyclerView.ViewHolder{
-
+    public static class ViewHolder
+            extends RecyclerView.ViewHolder {
 
         TextView titulo;
+
         TextView fecha;
+
         TextView area;
 
         ImageView imagen;
 
+        ImageView btnEliminar;
 
 
-        public ViewHolder(@NonNull View itemView){
+        public ViewHolder(
+                @NonNull View itemView
+        ) {
 
             super(itemView);
 
@@ -156,10 +232,11 @@ public class AlertaAdapter extends RecyclerView.Adapter<AlertaAdapter.ViewHolder
                     );
 
 
+            btnEliminar =
+                    itemView.findViewById(
+                            R.id.btnEliminarAlerta
+                    );
+
         }
-
-
     }
-
-
 }

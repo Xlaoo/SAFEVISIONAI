@@ -11,6 +11,7 @@ import retrofit2.http.Headers;
 import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
+import retrofit2.http.DELETE;
 
 public interface SupabaseApi {
 
@@ -107,6 +108,7 @@ public interface SupabaseApi {
 
     @GET("rest/v1/alertas")
     Call<List<Map<String, Object>>> obtenerAlertas(
+            @Header("apikey") String apiKey,
             @Header("Authorization") String authorization,
             @Query("select") String select,
             @Query("estado") String estado,
@@ -173,6 +175,16 @@ public interface SupabaseApi {
             @Header("Authorization") String authorization,
             @Query("id") String id,
             @Body Map<String, Object> datos
+    );
+    // =========================================================
+// ELIMINAR ALERTA
+// =========================================================
+
+    @Headers("Prefer: return=minimal")
+    @DELETE("rest/v1/alertas")
+    Call<Void> eliminarAlerta(
+            @Header("Authorization") String authorization,
+            @Query("id") String id
     );
 
 }

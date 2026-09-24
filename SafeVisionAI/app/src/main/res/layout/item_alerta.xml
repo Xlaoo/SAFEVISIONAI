@@ -1,10 +1,10 @@
-<LinearLayout
+<?xml version="1.0" encoding="utf-8"?>
 
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
 
     android:layout_width="match_parent"
-
-    android:layout_height="100dp"
+    android:layout_height="110dp"
 
     android:layout_margin="8dp"
 
@@ -15,19 +15,22 @@
     android:orientation="horizontal">
 
 
+    <!-- ICONO ALERTA -->
+
     <ImageView
 
         android:id="@+id/imgTrabajador"
 
-        android:layout_width="60dp"
+        android:layout_width="55dp"
 
-        android:layout_height="60dp"
+        android:layout_height="55dp"
 
         android:layout_gravity="center_vertical"
 
         android:src="@android:drawable/ic_dialog_alert"/>
 
 
+    <!-- INFORMACIÓN -->
 
     <LinearLayout
 
@@ -41,7 +44,7 @@
 
         android:gravity="center_vertical"
 
-        android:paddingStart="15dp">
+        android:paddingStart="12dp">
 
 
         <TextView
@@ -52,10 +55,13 @@
 
             android:layout_height="wrap_content"
 
-            android:textSize="18sp"
+            android:text="Trabajador sin casco"
+
+            android:textColor="#8B0000"
+
+            android:textSize="17sp"
 
             android:textStyle="bold"/>
-
 
 
         <TextView
@@ -66,8 +72,11 @@
 
             android:layout_height="wrap_content"
 
-            android:textSize="13sp"/>
+            android:layout_marginTop="3dp"
 
+            android:text="Fecha"
+
+            android:textSize="12sp"/>
 
 
         <TextView
@@ -78,12 +87,40 @@
 
             android:layout_height="wrap_content"
 
-            android:textSize="13sp"/>
+            android:layout_marginTop="2dp"
+
+            android:text="Producción"
+
+            android:textSize="12sp"/>
 
 
     </LinearLayout>
 
 
+    <!-- PAPELERA -->
+
+    <ImageView
+
+        android:id="@+id/btnEliminarAlerta"
+
+        android:layout_width="42dp"
+
+        android:layout_height="42dp"
+
+        android:layout_gravity="center_vertical"
+
+        android:padding="8dp"
+
+        android:clickable="true"
+
+        android:focusable="true"
+
+        android:contentDescription="Eliminar alerta"
+
+        android:src="@android:drawable/ic_menu_delete"/>
+
+
+    <!-- FLECHA -->
 
     <TextView
 

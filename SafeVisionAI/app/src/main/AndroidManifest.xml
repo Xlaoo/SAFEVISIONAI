@@ -2,18 +2,49 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- INTERNET -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+
+    <!-- WIFI -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+    <!-- NOTIFICACIONES -->
+    <uses-permission
+        android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- SERVICIO EN SEGUNDO PLANO -->
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <!-- ANDROID 14+ -->
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+
+
     <application
+
         android:allowBackup="true"
+
         android:usesCleartextTraffic="true"
+
         android:dataExtractionRules="@xml/data_extraction_rules"
+
         android:fullBackupContent="@xml/backup_rules"
+
         android:icon="@mipmap/ic_launcher"
+
         android:label="@string/app_name"
+
         android:roundIcon="@mipmap/ic_launcher_round"
+
         android:supportsRtl="true"
+
         android:theme="@style/Theme.SafeVisionAI">
+
+
+        <!-- ================================================= -->
+        <!-- LOGIN -->
+        <!-- ================================================= -->
 
         <activity
             android:name=".MainActivity"
@@ -21,17 +52,30 @@
             android:windowSoftInputMode="adjustResize">
 
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+
+                <action
+                    android:name="android.intent.action.MAIN" />
+
+                <category
+                    android:name="android.intent.category.LAUNCHER" />
+
             </intent-filter>
 
         </activity>
 
 
+        <!-- ================================================= -->
+        <!-- INICIO -->
+        <!-- ================================================= -->
+
         <activity
             android:name=".InicioActivity"
             android:exported="false" />
 
+
+        <!-- ================================================= -->
+        <!-- REGISTRO -->
+        <!-- ================================================= -->
 
         <activity
             android:name=".RegistroActivity"
@@ -39,11 +83,19 @@
             android:windowSoftInputMode="adjustResize" />
 
 
+        <!-- ================================================= -->
+        <!-- RECUPERAR PASSWORD -->
+        <!-- ================================================= -->
+
         <activity
             android:name=".RecuperarPasswordActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
+
+        <!-- ================================================= -->
+        <!-- NUEVA PASSWORD -->
+        <!-- ================================================= -->
 
         <activity
             android:name=".NuevaPasswordActivity"
@@ -52,11 +104,14 @@
 
             <intent-filter>
 
-                <action android:name="android.intent.action.VIEW" />
+                <action
+                    android:name="android.intent.action.VIEW" />
 
-                <category android:name="android.intent.category.DEFAULT" />
+                <category
+                    android:name="android.intent.category.DEFAULT" />
 
-                <category android:name="android.intent.category.BROWSABLE" />
+                <category
+                    android:name="android.intent.category.BROWSABLE" />
 
                 <data
                     android:host="reset-password"
@@ -67,19 +122,46 @@
         </activity>
 
 
+        <!-- ================================================= -->
+        <!-- CÁMARAS -->
+        <!-- ================================================= -->
+
         <activity
             android:name=".CamarasActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
+
+
         <activity
             android:name=".DetalleCamaraActivity"
             android:exported="false" />
+
+
+        <!-- ================================================= -->
+        <!-- ALERTAS -->
+        <!-- ================================================= -->
+
         <activity
             android:name=".AlertasActivity"
             android:exported="false" />
+
+
         <activity
             android:name=".DetalleAlertaActivity"
-            android:exported="false"/>
+            android:exported="false" />
+
+
+        <!-- ================================================= -->
+        <!-- SERVICIO DE NOTIFICACIONES -->
+        <!-- ================================================= -->
+
+        <service
+            android:name=".AlertaNotificationService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+
+
     </application>
 
 </manifest>

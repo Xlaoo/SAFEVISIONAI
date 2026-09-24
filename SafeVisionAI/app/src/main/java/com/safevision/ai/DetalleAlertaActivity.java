@@ -1,18 +1,33 @@
 package com.safevision.ai;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
-
+import android.widget.Toast;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 public class DetalleAlertaActivity extends BaseActivity {
 
-    TextView txtTitulo;
-    TextView txtFecha;
-    TextView txtArea;
+    private TextView txtTitulo;
+    private TextView txtFecha;
+    private TextView txtArea;
 
-    TextView btnRegresarDetalle;
-    Button btnRegistrarAccion;
+    private TextView btnRegresarDetalle;
+
+    private Button btnRegistrarAccion;
+
+    private ImageView imgFotoNormal;
+    private ImageView imgFotoZoom;
+
+    private final ExecutorService executor =
+            Executors.newSingleThreadExecutor();
 
 
     @Override
@@ -26,7 +41,7 @@ public class DetalleAlertaActivity extends BaseActivity {
 
 
         // =====================================================
-        // REFERENCIAS DEL XML
+        // REFERENCIAS
         // =====================================================
 
         txtTitulo =
@@ -34,33 +49,39 @@ public class DetalleAlertaActivity extends BaseActivity {
                         R.id.txtTituloDetalle
                 );
 
-
         txtFecha =
                 findViewById(
                         R.id.txtFechaDetalle
                 );
-
 
         txtArea =
                 findViewById(
                         R.id.txtAreaDetalle
                 );
 
-
         btnRegresarDetalle =
                 findViewById(
                         R.id.btnRegresarDetalle
                 );
-
 
         btnRegistrarAccion =
                 findViewById(
                         R.id.btnRegistrarAccion
                 );
 
+        imgFotoNormal =
+                findViewById(
+                        R.id.imgFotoNormal
+                );
+
+        imgFotoZoom =
+                findViewById(
+                        R.id.imgFotoZoom
+                );
+
 
         // =====================================================
-        // RECIBIR ALERTA
+        // RECIBIR DATOS DE LA ALERTA
         // =====================================================
 
         Intent datos =
@@ -120,10 +141,27 @@ public class DetalleAlertaActivity extends BaseActivity {
 
 
         // =====================================================
+        // RECIBIR FOTOS
+        // =====================================================
+
+        String fotoNormal =
+                datos.getStringExtra(
+                        "foto_normal"
+                );
+
+
+        String fotoZoom =
+                datos.getStringExtra(
+                        "foto_zoom"
+                );
+
+
+        // =====================================================
         // MOSTRAR INFORMACIÓN
         // =====================================================
 
-        if (titulo != null) {
+        if (titulo != null
+                && !titulo.isEmpty()) {
 
             txtTitulo.setText(
                     titulo
@@ -134,11 +172,11 @@ public class DetalleAlertaActivity extends BaseActivity {
             txtTitulo.setText(
                     "Alerta"
             );
-
         }
 
 
-        if (fecha != null) {
+        if (fecha != null
+                && !fecha.isEmpty()) {
 
             txtFecha.setText(
                     "Fecha: " + fecha
@@ -149,11 +187,11 @@ public class DetalleAlertaActivity extends BaseActivity {
             txtFecha.setText(
                     "Fecha:"
             );
-
         }
 
 
-        if (area != null) {
+        if (area != null
+                && !area.isEmpty()) {
 
             txtArea.setText(
                     "Área: " + area
@@ -164,12 +202,51 @@ public class DetalleAlertaActivity extends BaseActivity {
             txtArea.setText(
                     "Área: Producción"
             );
-
         }
 
 
         // =====================================================
-        // BOTÓN REGRESAR
+        // CARGAR FOTO NORMAL
+        // =====================================================
+
+        if (fotoNormal != null
+                && !fotoNormal.isEmpty()) {
+
+            cargarImagen(
+                    fotoNormal,
+                    imgFotoNormal
+            );
+
+        } else {
+
+            imgFotoNormal.setImageResource(
+                    android.R.drawable.ic_menu_report_image
+            );
+        }
+
+
+        // =====================================================
+        // CARGAR FOTO ZOOM
+        // =====================================================
+
+        if (fotoZoom != null
+                && !fotoZoom.isEmpty()) {
+
+            cargarImagen(
+                    fotoZoom,
+                    imgFotoZoom
+            );
+
+        } else {
+
+            imgFotoZoom.setImageResource(
+                    android.R.drawable.ic_menu_report_image
+            );
+        }
+
+
+        // =====================================================
+        // REGRESAR
         // =====================================================
 
         btnRegresarDetalle.setOnClickListener(
@@ -191,21 +268,18 @@ public class DetalleAlertaActivity extends BaseActivity {
                             );
 
 
-                    // ID DE LA ALERTA
                     intent.putExtra(
                             "alerta_id",
                             idAlerta
                     );
 
 
-                    // ID DEL TRABAJADOR
                     intent.putExtra(
                             "trabajador_id",
                             trabajadorId
                     );
 
 
-                    // DATOS DE LA ALERTA
                     intent.putExtra(
                             "titulo",
                             titulo
@@ -230,12 +304,131 @@ public class DetalleAlertaActivity extends BaseActivity {
                     );
 
 
-                    startActivity(
-                            intent
-                    );
+                    startActivity(intent);
 
                 }
         );
+
+    }
+
+
+    // =====================================================
+    // DESCARGAR IMAGEN DESDE INTERNET
+    // =====================================================
+
+    private void cargarImagen(
+            String urlImagen,
+            ImageView imageView
+    ) {
+
+        executor.execute(() -> {
+
+            HttpURLConnection conexion = null;
+
+            try {
+
+                URL url =
+                        new URL(
+                                urlImagen
+                        );
+
+
+                conexion =
+                        (HttpURLConnection)
+                                url.openConnection();
+
+
+                conexion.setConnectTimeout(
+                        10000
+                );
+
+
+                conexion.setReadTimeout(
+                        10000
+                );
+
+
+                conexion.setDoInput(
+                        true
+                );
+
+
+                conexion.connect();
+
+
+                InputStream input =
+                        conexion.getInputStream();
+
+
+                Bitmap bitmap =
+                        BitmapFactory.decodeStream(
+                                input
+                        );
+
+
+                input.close();
+
+
+                runOnUiThread(() -> {
+
+                    if (bitmap != null) {
+
+                        imageView.setImageBitmap(
+                                bitmap
+                        );
+
+                    } else {
+
+                        imageView.setImageResource(
+                                android.R.drawable.ic_menu_report_image
+                        );
+                    }
+
+                });
+
+
+            } catch (Exception e) {
+
+                runOnUiThread(() -> {
+
+                    imageView.setImageResource(
+                            android.R.drawable.ic_menu_report_image
+                    );
+
+                    Toast.makeText(
+                            DetalleAlertaActivity.this,
+                            "No se pudo cargar la imagen",
+                            Toast.LENGTH_SHORT
+                    ).show();
+
+                });
+
+
+            } finally {
+
+                if (conexion != null) {
+
+                    conexion.disconnect();
+
+                }
+
+            }
+
+        });
+
+    }
+
+
+    // =====================================================
+    // DESTRUIR
+    // =====================================================
+
+    @Override
+    protected void onDestroy() {
+
+        executor.shutdownNow();
+
+        super.onDestroy();
 
     }
 
