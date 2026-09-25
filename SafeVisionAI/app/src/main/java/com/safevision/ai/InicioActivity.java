@@ -374,7 +374,7 @@ public class InicioActivity extends BaseActivity {
 
 
         String authorization =
-                "Bearer " + accessToken;
+                "Bearer " + (accessToken != null ? accessToken : SupabaseConfig.API_KEY);
 
 
         supabaseApi.obtenerTrabajadores(

@@ -1,5 +1,6 @@
 package com.safevision.ai;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
@@ -424,15 +425,9 @@ public class RegistrarAccionActivity extends BaseActivity {
         final String observacion = edtObservacion.getText().toString().trim();
 
         btnAplicar.setEnabled(false);
-
-        // Si ya está validado como trabajador existente con ID válido
-        if (trabajadorExiste && trabajadorId > 0) {
-            ejecutarAccionTrabajadorExistente(trabajadorId, dni, implemento, accion, observacion);
-            return;
-        }
-
-        // Si el usuario no presionó "Verificar", buscamos primero para evitar duplicidad de DNI
         txtEstadoDni.setText("Validando DNI en el sistema...");
+
+        // Siempre consultar Supabase por DNI antes de decidir INSERT vs UPDATE
         api.buscarTrabajadorPorDni(getAuthorization(), "*", "eq." + dni).enqueue(
                 new Callback<List<Map<String, Object>>>() {
                     @Override
@@ -454,12 +449,13 @@ public class RegistrarAccionActivity extends BaseActivity {
                         List<Map<String, Object>> res = response.body();
 
                         if (res != null && !res.isEmpty()) {
-                            // CASO 1: EL DNI YA EXISTE -> RECUPERAR DATOS Y NO DUPLICAR
+                            // CASO 1: EL TRABAJADOR YA EXISTE -> NO INSERTAR, REUTILIZAR ID EXISTENTE
                             Map<String, Object> trab = res.get(0);
                             poblarDatosTrabajadorExistente(trab);
-                            ejecutarAccionTrabajadorExistente(trabajadorId, dni, implemento, accion, observacion);
+                            int idExistente = obtenerNumero(trab.get("id"));
+                            ejecutarAccionTrabajadorExistente(idExistente, dni, implemento, accion, observacion);
                         } else {
-                            // CASO 2: EL DNI NO EXISTE -> SOLICITAR NOMBRES Y CREAR TRABAJADOR
+                            // CASO 2: EL TRABAJADOR NO EXISTE -> SOLICITAR NOMBRES Y CREAR TRABAJADOR
                             trabajadorExiste = false;
                             trabajadorId = -1;
 
@@ -471,6 +467,7 @@ public class RegistrarAccionActivity extends BaseActivity {
                                 edtNombre.setEnabled(true);
                                 edtNombre.setError("Ingrese el nombre del trabajador");
                                 edtNombre.requestFocus();
+                                txtEstadoDni.setText("DNI no registrado. Ingrese nombres y apellidos.");
                                 return;
                             }
 
@@ -479,6 +476,7 @@ public class RegistrarAccionActivity extends BaseActivity {
                                 edtApellido.setEnabled(true);
                                 edtApellido.setError("Ingrese el apellido del trabajador");
                                 edtApellido.requestFocus();
+                                txtEstadoDni.setText("DNI no registrado. Ingrese nombres y apellidos.");
                                 return;
                             }
 
@@ -809,6 +807,9 @@ public class RegistrarAccionActivity extends BaseActivity {
                                 Toast.LENGTH_SHORT
                         ).show();
 
+                        Intent intent = new Intent(RegistrarAccionActivity.this, AlertasActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                        startActivity(intent);
                         finish();
                     }
 
@@ -829,16 +830,20 @@ public class RegistrarAccionActivity extends BaseActivity {
     // UTILIDADES DE CONVERSIÓN
     // =========================================================
     private int obtenerNumero(Object valor) {
+        return obtenerNumero(valor, 0);
+    }
+
+    private int obtenerNumero(Object valor, int defecto) {
         if (valor == null) {
-            return 0;
+            return defecto;
         }
         if (valor instanceof Number) {
             return ((Number) valor).intValue();
         }
         try {
-            return Integer.parseInt(String.valueOf(valor));
+            return Integer.parseInt(String.valueOf(valor).trim());
         } catch (Exception e) {
-            return 0;
+            return defecto;
         }
     }
 

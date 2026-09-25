@@ -25,3 +25,4 @@ __pycache__/
 *.pyc
 *.pyo
 pyrefly.toml
+SafeVisionCamera/alertas/

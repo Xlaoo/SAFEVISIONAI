@@ -190,18 +190,11 @@ public class DetalleAlertaActivity extends BaseActivity {
         }
 
 
-        if (area != null
-                && !area.isEmpty()) {
-
-            txtArea.setText(
-                    "Trabajador #" + trabajadorId + " • Área: " + area
-            );
-
+        String areaTexto = (area != null && !area.isEmpty()) ? area : "Producción";
+        if (trabajadorId > 0) {
+            txtArea.setText("Trabajador #" + trabajadorId + " • Área: " + areaTexto);
         } else {
-
-            txtArea.setText(
-                    "Trabajador #" + trabajadorId + " • Área: Producción"
-            );
+            txtArea.setText("Área: " + areaTexto);
         }
 
 

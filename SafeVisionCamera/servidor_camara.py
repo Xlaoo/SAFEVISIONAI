@@ -1,10 +1,15 @@
 import sys
-if hasattr(sys.stdout, 'reconfigure'):
-    try:
-        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
-        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
-    except Exception:
-        pass
+try:
+    stdout_reconfigure = getattr(sys.stdout, "reconfigure", None)
+    stderr_reconfigure = getattr(sys.stderr, "reconfigure", None)
+
+    if callable(stdout_reconfigure):
+        stdout_reconfigure(encoding="utf-8", errors="replace")
+
+    if callable(stderr_reconfigure):
+        stderr_reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
 
 from flask import request
 from flask import Flask, Response, jsonify, send_from_directory, request as flask_request

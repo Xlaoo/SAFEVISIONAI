@@ -267,9 +267,7 @@ public class AlertasActivity extends BaseActivity {
                             // =====================================
 
                             int id =
-                                    ((Number)
-                                            item.get("id"))
-                                            .intValue();
+                                    obtenerNumero(item.get("id"), -1);
 
 
                             // =====================================
@@ -277,9 +275,7 @@ public class AlertasActivity extends BaseActivity {
                             // =====================================
 
                             int trabajadorId =
-                                    ((Number)
-                                            item.get("trabajador_id"))
-                                            .intValue();
+                                    obtenerNumero(item.get("trabajador_id"), -1);
 
 
                             // =====================================
@@ -370,7 +366,9 @@ public class AlertasActivity extends BaseActivity {
                                     problema;
 
                             String area =
-                                    "Trabajador #" + trabajadorId + " • Producción";
+                                    trabajadorId > 0
+                                            ? "Trabajador #" + trabajadorId + " • Producción"
+                                            : "Producción";
 
                             // =====================================
                             // AGREGAR ALERTA
@@ -750,6 +748,23 @@ public class AlertasActivity extends BaseActivity {
 
         }
 
+    }
+
+    // =========================================================
+    // UTILIDADES DE CONVERSIÓN SEGURA
+    // =========================================================
+    private int obtenerNumero(Object valor, int defecto) {
+        if (valor == null) {
+            return defecto;
+        }
+        if (valor instanceof Number) {
+            return ((Number) valor).intValue();
+        }
+        try {
+            return Integer.parseInt(String.valueOf(valor).trim());
+        } catch (Exception e) {
+            return defecto;
+        }
     }
 
 }
