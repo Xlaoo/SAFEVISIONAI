@@ -332,13 +332,19 @@ public class AlertasActivity extends BaseActivity {
                                             : String.valueOf(
                                             item.get("imagen")
                                     );
+                            if ("null".equalsIgnoreCase(imagen) || "EMPTY".equalsIgnoreCase(imagen)) {
+                                imagen = "";
+                            }
+
                             String imagenNormal =
                                     item.get("imagen_normal") == null
                                             ? ""
                                             : String.valueOf(
                                             item.get("imagen_normal")
                                     );
-
+                            if ("null".equalsIgnoreCase(imagenNormal) || "EMPTY".equalsIgnoreCase(imagenNormal)) {
+                                imagenNormal = "";
+                            }
 
                             String imagenZoom =
                                     item.get("imagen_zoom") == null
@@ -346,15 +352,15 @@ public class AlertasActivity extends BaseActivity {
                                             : String.valueOf(
                                             item.get("imagen_zoom")
                                     );
-
+                            if ("null".equalsIgnoreCase(imagenZoom) || "EMPTY".equalsIgnoreCase(imagenZoom)) {
+                                imagenZoom = "";
+                            }
 
                             String titulo =
                                     problema;
 
-
                             String area =
-                                    "Producción";
-
+                                    "Trabajador #" + trabajadorId + " • Producción";
 
                             // =====================================
                             // AGREGAR ALERTA
@@ -430,31 +436,41 @@ public class AlertasActivity extends BaseActivity {
                         .getClient()
                         .create(SupabaseApi.class);
 
-
         String authorization =
                 "Bearer " + SupabaseConfig.API_KEY;
-
-
-        // =============================================
-        // FILTRO DE SUPABASE
-        // =============================================
 
         String filtroId =
                 "eq." + alerta.getId();
 
+        // 1. Eliminar acciones asociadas a la alerta primero (si existen)
+        api.eliminarAccionesAlerta(
+                authorization,
+                filtroId
+        ).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                ejecutarEliminacionAlerta(api, authorization, filtroId, alerta);
+            }
 
-        // =============================================
-        // DELETE
-        // =============================================
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                ejecutarEliminacionAlerta(api, authorization, filtroId, alerta);
+            }
+        });
 
-        Call<Void> llamada =
-                api.eliminarAlerta(
-                        authorization,
-                        filtroId
-                );
+    }
 
+    private void ejecutarEliminacionAlerta(
+            SupabaseApi api,
+            String authorization,
+            String filtroId,
+            Alerta alerta
+    ) {
 
-        llamada.enqueue(
+        api.eliminarAlerta(
+                authorization,
+                filtroId
+        ).enqueue(
                 new Callback<Void>() {
 
                     @Override
@@ -465,26 +481,13 @@ public class AlertasActivity extends BaseActivity {
 
                         if (response.isSuccessful()) {
 
-
-                            // =================================
-                            // BORRAR DE LA LISTA
-                            // =================================
-
                             int posicion =
                                     lista.indexOf(alerta);
 
-
                             if (posicion >= 0) {
-
                                 lista.remove(posicion);
-
-
-                                adapter.notifyItemRemoved(
-                                        posicion
-                                );
-
+                                adapter.notifyItemRemoved(posicion);
                             }
-
 
                             Toast.makeText(
                                     AlertasActivity.this,
@@ -492,12 +495,24 @@ public class AlertasActivity extends BaseActivity {
                                     Toast.LENGTH_SHORT
                             ).show();
 
+                            // Recargar desde Supabase para asegurar fuente de verdad
+                            cargarAlertas();
 
                         } else {
 
+                            String detalle = "HTTP " + response.code();
+                            try {
+                                if (response.errorBody() != null) {
+                                    detalle += " " + response.errorBody().string();
+                                }
+                            } catch (Exception ignored) {
+                            }
+
+                            android.util.Log.e("SAFEVISION_ELIMINAR", detalle);
+
                             Toast.makeText(
                                     AlertasActivity.this,
-                                    "No se pudo eliminar la alerta",
+                                    "No se pudo eliminar la alerta: " + detalle,
                                     Toast.LENGTH_LONG
                             ).show();
 

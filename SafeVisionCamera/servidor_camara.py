@@ -1,4 +1,5 @@
-from flask import Flask, Response, jsonify, send_from_directory
+from flask import request
+from flask import Flask, Response, jsonify, send_from_directory, request as flask_request
 import cv2
 import socket
 import atexit
@@ -33,8 +34,10 @@ SUPABASE_URL = "https://bypkhulaxfzudvkavwtc.supabase.co"
 SUPABASE_API_KEY = os.getenv("SUPABASE_API_KEY", "")
 
 SUPABASE_ALERTAS_URL = SUPABASE_URL + "/rest/v1/alertas"
+SUPABASE_TRABAJADORES_URL = SUPABASE_URL + "/rest/v1/trabajadores"
 
-TRABAJADOR_ID = 1
+# DNI del trabajador actual detectado o asignado
+DNI_TRABAJADOR_ACTUAL = os.getenv("TRABAJADOR_DNI", "12345678")
 
 SUPABASE_TIMEOUT = 10
 
@@ -314,10 +317,174 @@ def calcular_zona_casco(
 
 
 # ==========================================================
+# FUNCIONES SUPABASE: TRABAJADORES Y DNI
+# ==========================================================
+
+def obtener_headers_supabase():
+    return {
+        "apikey": SUPABASE_API_KEY,
+        "Authorization": "Bearer " + SUPABASE_API_KEY,
+        "Content-Type": "application/json",
+        "Prefer": "return=representation"
+    }
+
+
+def buscar_trabajador_por_dni(dni):
+    """
+    Busca si el DNI ya existe en public.trabajadores.
+    Retorna el diccionario del trabajador o None.
+    """
+    if not SUPABASE_API_KEY or SUPABASE_API_KEY == "REEMPLAZA_CON_TU_API_KEY":
+        return None
+
+    try:
+        url = f"{SUPABASE_TRABAJADORES_URL}?dni=eq.{dni}&select=*"
+        res = requests.get(
+            url,
+            headers=obtener_headers_supabase(),
+            timeout=SUPABASE_TIMEOUT
+        )
+        if res.ok:
+            datos = res.json()
+            if isinstance(datos, list) and len(datos) > 0:
+                return datos[0]
+        return None
+    except Exception as e:
+        print(f"⚠️ Error buscando trabajador por DNI {dni}:", e)
+        return None
+
+
+def registrar_trabajador_nuevo(dni):
+    """
+    Registra un nuevo trabajador en public.trabajadores cuando el DNI no existe.
+    """
+    if not SUPABASE_API_KEY or SUPABASE_API_KEY == "REEMPLAZA_CON_TU_API_KEY":
+        return None
+
+    try:
+        datos = {
+            "dni": str(dni),
+            "nombres": "Trabajador",
+            "apellidos": f"DNI {dni}",
+            "area": "Producción",
+            "casco": False,
+            "chaleco": True,
+            "casco_retiros": 0,
+            "casco_colocaciones": 0,
+            "chaleco_retiros": 0,
+            "chaleco_colocaciones": 0
+        }
+        res = requests.post(
+            SUPABASE_TRABAJADORES_URL,
+            headers=obtener_headers_supabase(),
+            json=datos,
+            timeout=SUPABASE_TIMEOUT
+        )
+        if res.ok:
+            resultado = res.json()
+            if isinstance(resultado, list) and len(resultado) > 0:
+                print(f"✅ Nuevo trabajador registrado. ID: {resultado[0].get('id')} - DNI: {dni}")
+                return resultado[0]
+        print("❌ Error registrando trabajador nuevo:", res.status_code, res.text)
+        return None
+    except Exception as e:
+        print("❌ Error de conexión al registrar trabajador:", e)
+        return None
+
+
+def obtener_o_crear_trabajador(dni):
+    """
+    Regla del flujo:
+    1. Buscar DNI en public.trabajadores.
+    2. Si existe -> utilizar trabajador existente (NO DUPLICAR).
+    3. Si NO existe -> registrar trabajador y obtener su trabajador_id.
+    """
+    trabajador = buscar_trabajador_por_dni(dni)
+    if trabajador is not None:
+        print(f"👤 Trabajador existente encontrado: ID {trabajador.get('id')} ({trabajador.get('nombres')} {trabajador.get('apellidos')}) - DNI: {dni}")
+        return trabajador, False
+
+    print(f"⚠️ DNI {dni} no registrado. Creando nuevo trabajador en Supabase...")
+    nuevo = registrar_trabajador_nuevo(dni)
+    return nuevo, True
+
+
+def acumular_deteccion_retiro_casco(trabajador):
+    """
+    Acumula la detección de retiro de casco sobre el trabajador existente:
+    Incrementa casco_retiros y actualiza casco = False.
+    """
+    if not trabajador or not SUPABASE_API_KEY:
+        return trabajador
+
+    try:
+        trabajador_id = trabajador.get("id")
+        actual_retiros = int(trabajador.get("casco_retiros") or 0)
+        nuevo_retiros = actual_retiros + 1
+
+        url = f"{SUPABASE_TRABAJADORES_URL}?id=eq.{trabajador_id}"
+        datos = {
+            "casco_retiros": nuevo_retiros,
+            "casco": False
+        }
+        res = requests.patch(
+            url,
+            headers=obtener_headers_supabase(),
+            json=datos,
+            timeout=SUPABASE_TIMEOUT
+        )
+        if res.ok:
+            trabajador["casco_retiros"] = nuevo_retiros
+            trabajador["casco"] = False
+            print(f"📊 Detección acumulada: trabajador #{trabajador_id} - casco_retiros = {nuevo_retiros}")
+        else:
+            print(f"⚠️ Error actualizando contadores de trabajador #{trabajador_id}:", res.status_code, res.text)
+    except Exception as e:
+        print("⚠️ Error acumulando detección de retiro:", e)
+
+    return trabajador
+
+
+def acumular_deteccion_colocacion_casco(trabajador):
+    """
+    Acumula la detección de colocación de casco:
+    Incrementa casco_colocaciones y actualiza casco = True.
+    """
+    if not trabajador or not SUPABASE_API_KEY:
+        return trabajador
+
+    try:
+        trabajador_id = trabajador.get("id")
+        actual_colocaciones = int(trabajador.get("casco_colocaciones") or 0)
+        nuevo_colocaciones = actual_colocaciones + 1
+
+        url = f"{SUPABASE_TRABAJADORES_URL}?id=eq.{trabajador_id}"
+        datos = {
+            "casco_colocaciones": nuevo_colocaciones,
+            "casco": True
+        }
+        res = requests.patch(
+            url,
+            headers=obtener_headers_supabase(),
+            json=datos,
+            timeout=SUPABASE_TIMEOUT
+        )
+        if res.ok:
+            trabajador["casco_colocaciones"] = nuevo_colocaciones
+            trabajador["casco"] = True
+            print(f"🟢 Colocación registrada: trabajador #{trabajador_id} - casco_colocaciones = {nuevo_colocaciones}")
+    except Exception as e:
+        print("⚠️ Error registrando colocación de casco:", e)
+
+    return trabajador
+
+
+# ==========================================================
 # GUARDAR ALERTA EN SUPABASE
 # ==========================================================
 
 def guardar_alerta_supabase(
+    trabajador_id,
     fecha,
     foto_normal_url,
     foto_zoom_url
@@ -335,25 +502,12 @@ def guardar_alerta_supabase(
 
         return None
 
-    headers = {
-
-        "apikey":
-            SUPABASE_API_KEY,
-
-        "Authorization":
-            "Bearer " + SUPABASE_API_KEY,
-
-        "Content-Type":
-            "application/json",
-
-        "Prefer":
-            "return=representation"
-    }
+    headers = obtener_headers_supabase()
 
     datos = {
 
         "trabajador_id":
-            TRABAJADOR_ID,
+            trabajador_id,
 
         "problema":
             "Trabajador sin casco",
@@ -417,6 +571,11 @@ def guardar_alerta_supabase(
                 print(
                     "🆔 ID:",
                     id_supabase
+                )
+
+                print(
+                    "👷 Trabajador ID:",
+                    trabajador_id
                 )
 
                 print(
@@ -685,10 +844,21 @@ def crear_fotos_alerta(
     )
 
     # ------------------------------------------------------
+    # GESTIÓN DEL TRABAJADOR Y DETECCIÓN (DNI)
+    # ------------------------------------------------------
+
+    trabajador, fue_creado = obtener_o_crear_trabajador(DNI_TRABAJADOR_ACTUAL)
+    trabajador_id = trabajador.get("id") if trabajador else 1
+
+    if trabajador:
+        acumular_deteccion_retiro_casco(trabajador)
+
+    # ------------------------------------------------------
     # SUPABASE
     # ------------------------------------------------------
 
     id_supabase = guardar_alerta_supabase(
+        trabajador_id,
         ahora.isoformat(),
         foto_normal_url,
         foto_zoom_url
@@ -703,6 +873,9 @@ def crear_fotos_alerta(
 
         "id_local":
             id_alerta,
+
+        "trabajador_id":
+            trabajador_id,
 
         "tipo":
             "CASCO_RETIRADO",
@@ -1169,6 +1342,10 @@ def iniciar_camara():
 
                 print()
 
+                trabajador_actual = buscar_trabajador_por_dni(DNI_TRABAJADOR_ACTUAL)
+                if trabajador_actual:
+                    acumular_deteccion_colocacion_casco(trabajador_actual)
+
                 alerta_activa = False
 
         # ==================================================
@@ -1623,6 +1800,33 @@ def info():
         "deteccion_casco":
             True
 
+    })
+
+
+# ==========================================================
+# GESTIÓN DNI TRABAJADOR
+# ==========================================================
+
+@app.route("/trabajador", methods=["GET", "POST"])
+def endpoint_trabajador():
+    global DNI_TRABAJADOR_ACTUAL
+    if request.method == "POST":
+        data = request.get_json(silent=True) or request.form
+        nuevo_dni = data.get("dni")
+        if nuevo_dni:
+            DNI_TRABAJADOR_ACTUAL = str(nuevo_dni).strip()
+            trabajador, _ = obtener_o_crear_trabajador(DNI_TRABAJADOR_ACTUAL)
+            return jsonify({
+                "mensaje": "DNI actualizado correctamente",
+                "dni": DNI_TRABAJADOR_ACTUAL,
+                "trabajador": trabajador
+            })
+        return jsonify({"error": "DNI no especificado"}), 400
+
+    trabajador = buscar_trabajador_por_dni(DNI_TRABAJADOR_ACTUAL)
+    return jsonify({
+        "dni_actual": DNI_TRABAJADOR_ACTUAL,
+        "trabajador": trabajador
     })
 
 

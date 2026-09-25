@@ -177,8 +177,19 @@ public interface SupabaseApi {
             @Body Map<String, Object> datos
     );
     // =========================================================
-// ELIMINAR ALERTA
-// =========================================================
+    // ELIMINAR ACCIONES DE UNA ALERTA
+    // =========================================================
+
+    @Headers("Prefer: return=minimal")
+    @DELETE("rest/v1/acciones_alerta")
+    Call<Void> eliminarAccionesAlerta(
+            @Header("Authorization") String authorization,
+            @Query("alerta_id") String alertaId
+    );
+
+    // =========================================================
+    // ELIMINAR ALERTA
+    // =========================================================
 
     @Headers("Prefer: return=minimal")
     @DELETE("rest/v1/alertas")

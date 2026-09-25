@@ -6,146 +6,107 @@ import javax.mail.*;
 import javax.mail.internet.*;
 import java.util.Properties;
 
-
 public class CorreoService {
 
+        public static void enviarCodigo(
+                        String destino,
+                        String codigo) {
 
-    public static void enviarCodigo(
-            String destino,
-            String codigo
-    ){
+                new Thread(() -> {
 
-        new Thread(() -> {
+                        try {
 
-            try {
+                                final String usuario = "b858e5001@smtp-brevo.com";
 
-                final String usuario =
-                        "b858e5001@smtp-brevo.com";
+                                final String clave = "";
 
-                final String clave =
-                        "";
+                                final String correoRemitente = "rosalespapuicorafa@gmail.com";
 
-                final String correoRemitente =
-                        "rosalespapuicorafa@gmail.com";
+                                Properties props = new Properties();
 
+                                props.put(
+                                                "mail.smtp.auth",
+                                                "true");
 
-                Properties props = new Properties();
+                                props.put(
+                                                "mail.smtp.starttls.enable",
+                                                "true");
 
+                                props.put(
+                                                "mail.smtp.host",
+                                                "smtp-relay.brevo.com");
 
-                props.put(
-                        "mail.smtp.auth",
-                        "true"
-                );
+                                props.put(
+                                                "mail.smtp.port",
+                                                "587");
 
-                props.put(
-                        "mail.smtp.starttls.enable",
-                        "true"
-                );
+                                props.put(
+                                                "mail.smtp.connectiontimeout",
+                                                "3000");
 
-                props.put(
-                        "mail.smtp.host",
-                        "smtp-relay.brevo.com"
-                );
+                                props.put(
+                                                "mail.smtp.timeout",
+                                                "5000");
 
-                props.put(
-                        "mail.smtp.port",
-                        "587"
-                );
+                                Session session = Session.getInstance(
+                                                props,
+                                                new Authenticator() {
 
+                                                        @Override
+                                                        protected PasswordAuthentication getPasswordAuthentication() {
 
-                props.put(
-                        "mail.smtp.connectiontimeout",
-                        "3000"
-                );
+                                                                return new PasswordAuthentication(
+                                                                                usuario,
+                                                                                clave);
 
+                                                        }
+                                                });
 
-                props.put(
-                        "mail.smtp.timeout",
-                        "5000"
-                );
+                                long inicio = System.currentTimeMillis();
 
+                                Message mensaje = new MimeMessage(session);
 
-                Session session =
-                        Session.getInstance(
-                                props,
-                                new Authenticator() {
+                                mensaje.setFrom(
+                                                new InternetAddress(correoRemitente));
 
-                                    @Override
-                                    protected PasswordAuthentication getPasswordAuthentication(){
+                                mensaje.setRecipients(
+                                                Message.RecipientType.TO,
+                                                InternetAddress.parse(destino));
 
-                                        return new PasswordAuthentication(
-                                                usuario,
-                                                clave
-                                        );
+                                mensaje.setSubject(
+                                                "Código SafeVisionAI");
 
-                                    }
-                                });
+                                mensaje.setText(
+                                                "Hola,\n\n"
+                                                                + "Tu código de verificación SafeVisionAI es:\n\n"
+                                                                + codigo
+                                                                + "\n\n"
+                                                                + "Este código tiene una duración de 1 minuto y 30 segundos."
+                                                                + "\n\n"
+                                                                + "Si no solicitaste este código, ignora este mensaje.");
 
+                                Transport.send(mensaje);
 
-                long inicio =
-                        System.currentTimeMillis();
+                                long fin = System.currentTimeMillis();
 
+                                Log.d(
+                                                "CORREO",
+                                                "Tiempo envío: "
+                                                                +
+                                                                (fin - inicio)
+                                                                +
+                                                                " ms");
 
-                Message mensaje =
-                        new MimeMessage(session);
+                        } catch (Exception e) {
 
+                                Log.e(
+                                                "CORREO_ERROR",
+                                                e.toString());
 
-                mensaje.setFrom(
-                        new InternetAddress(correoRemitente)
-                );
+                        }
 
+                }).start();
 
-                mensaje.setRecipients(
-                        Message.RecipientType.TO,
-                        InternetAddress.parse(destino)
-                );
-
-
-                mensaje.setSubject(
-                        "Código SafeVisionAI"
-                );
-
-
-                mensaje.setText(
-                        "Hola,\n\n"
-                                + "Tu código de verificación SafeVisionAI es:\n\n"
-                                + codigo
-                                + "\n\n"
-                                + "Este código tiene una duración de 1 minuto y 30 segundos."
-                                + "\n\n"
-                                + "Si no solicitaste este código, ignora este mensaje."
-                );
-
-
-                Transport.send(mensaje);
-
-
-                long fin =
-                        System.currentTimeMillis();
-
-
-                Log.d(
-                        "CORREO",
-                        "Tiempo envío: "
-                                +
-                                (fin-inicio)
-                                +
-                                " ms"
-                );
-
-
-            }catch(Exception e){
-
-                Log.e(
-                        "CORREO_ERROR",
-                        e.toString()
-                );
-
-            }
-
-
-        }).start();
-
-    }
+        }
 
 }

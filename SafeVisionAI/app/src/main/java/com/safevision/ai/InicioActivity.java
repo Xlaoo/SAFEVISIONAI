@@ -172,6 +172,8 @@ public class InicioActivity extends BaseActivity {
 
         cargarTrabajadores();
 
+        cargarAlertas();
+
 
         // ==========================================
         // BOTÓN ALERTAS
@@ -626,6 +628,50 @@ public class InicioActivity extends BaseActivity {
 
         finish();
     }
+    // =====================================================
+    // CARGAR CANTIDAD DE ALERTAS PENDIENTES DESDE SUPABASE
+    // =====================================================
+
+    private void cargarAlertas() {
+
+        String apiKey =
+                SupabaseConfig.API_KEY;
+
+        String authorization =
+                "Bearer " + (accessToken != null ? accessToken : SupabaseConfig.API_KEY);
+
+        supabaseApi.obtenerAlertas(
+                apiKey,
+                authorization,
+                "id",
+                "eq.PENDIENTE",
+                "created_at.desc"
+        ).enqueue(new Callback<List<Map<String, Object>>>() {
+            @Override
+            public void onResponse(
+                    Call<List<Map<String, Object>>> call,
+                    Response<List<Map<String, Object>>> response
+            ) {
+                if (response.isSuccessful() && response.body() != null) {
+                    txtCantidadAlertas.setText(
+                            String.valueOf(response.body().size())
+                    );
+                } else {
+                    Log.e("INICIO_ALERTAS", "Error HTTP: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(
+                    Call<List<Map<String, Object>>> call,
+                    Throwable t
+            ) {
+                Log.e("INICIO_ALERTAS", "Error: " + t.getMessage());
+            }
+        });
+
+    }
+
     private void ocultarBarraNavegacion() {
 
         WindowInsetsControllerCompat controller =
@@ -647,6 +693,8 @@ public class InicioActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         ocultarBarraNavegacion();
+        cargarAlertas();
+        cargarTrabajadores();
     }
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {

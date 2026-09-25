@@ -194,13 +194,13 @@ public class DetalleAlertaActivity extends BaseActivity {
                 && !area.isEmpty()) {
 
             txtArea.setText(
-                    "Área: " + area
+                    "Trabajador #" + trabajadorId + " • Área: " + area
             );
 
         } else {
 
             txtArea.setText(
-                    "Área: Producción"
+                    "Trabajador #" + trabajadorId + " • Área: Producción"
             );
         }
 
@@ -209,8 +209,7 @@ public class DetalleAlertaActivity extends BaseActivity {
         // CARGAR FOTO NORMAL
         // =====================================================
 
-        if (fotoNormal != null
-                && !fotoNormal.isEmpty()) {
+        if (esUrlValida(fotoNormal)) {
 
             cargarImagen(
                     fotoNormal,
@@ -229,8 +228,7 @@ public class DetalleAlertaActivity extends BaseActivity {
         // CARGAR FOTO ZOOM
         // =====================================================
 
-        if (fotoZoom != null
-                && !fotoZoom.isEmpty()) {
+        if (esUrlValida(fotoZoom)) {
 
             cargarImagen(
                     fotoZoom,
@@ -395,12 +393,6 @@ public class DetalleAlertaActivity extends BaseActivity {
                             android.R.drawable.ic_menu_report_image
                     );
 
-                    Toast.makeText(
-                            DetalleAlertaActivity.this,
-                            "No se pudo cargar la imagen",
-                            Toast.LENGTH_SHORT
-                    ).show();
-
                 });
 
 
@@ -416,6 +408,17 @@ public class DetalleAlertaActivity extends BaseActivity {
 
         });
 
+    }
+
+    private boolean esUrlValida(String url) {
+        if (url == null) {
+            return false;
+        }
+        String limpia = url.trim();
+        return !limpia.isEmpty()
+                && !limpia.equalsIgnoreCase("null")
+                && !limpia.equalsIgnoreCase("empty")
+                && (limpia.startsWith("http://") || limpia.startsWith("https://"));
     }
 
 

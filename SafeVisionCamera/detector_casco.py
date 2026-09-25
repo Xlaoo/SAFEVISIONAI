@@ -115,10 +115,12 @@ def main():
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
         print("No se pudo abrir la camara. Verifica el indice (0, 1, ...) o los permisos.")
+        detector.close()
         return
 
     print("Presiona 'q' para salir.")
     t0 = time.time()
+    ultimo_timestamp_ms = 0
 
     while True:
         ok, frame = cap.read()
@@ -132,6 +134,10 @@ def main():
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
 
         timestamp_ms = int((time.time() - t0) * 1000)
+        if timestamp_ms <= ultimo_timestamp_ms:
+            timestamp_ms = ultimo_timestamp_ms + 1
+        ultimo_timestamp_ms = timestamp_ms
+
         result = detector.detect_for_video(mp_image, timestamp_ms)
 
         if not result.detections:

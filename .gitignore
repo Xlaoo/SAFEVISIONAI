@@ -19,3 +19,9 @@ local.properties
 
 # Firebase
 google-services.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+pyrefly.toml
