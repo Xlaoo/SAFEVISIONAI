@@ -129,6 +129,18 @@ public interface SupabaseApi {
 
 
     // =========================================================
+    // BUSCAR TRABAJADOR POR ID
+    // =========================================================
+
+    @GET("rest/v1/trabajadores")
+    Call<List<Map<String, Object>>> buscarTrabajadorPorId(
+            @Header("Authorization") String authorization,
+            @Query("select") String select,
+            @Query("id") String id
+    );
+
+
+    // =========================================================
     // REGISTRAR TRABAJADOR
     // =========================================================
 
