@@ -149,7 +149,9 @@
         <activity
             android:name=".DetalleAlertaActivity"
             android:exported="false" />
-
+        <activity
+            android:name=".RegistrarAccionActivity"
+            android:exported="false" />
 
         <!-- ================================================= -->
         <!-- SERVICIO DE NOTIFICACIONES -->

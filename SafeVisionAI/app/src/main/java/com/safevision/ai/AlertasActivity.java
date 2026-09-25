@@ -157,9 +157,14 @@ public class AlertasActivity extends BaseActivity {
 
         recyclerAlertas.setAdapter(adapter);
 
-
         cargarAlertas();
+    }
 
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        cargarAlertas();
     }
 
 

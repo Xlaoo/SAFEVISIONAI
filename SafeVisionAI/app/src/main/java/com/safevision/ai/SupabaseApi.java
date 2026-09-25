@@ -153,6 +153,18 @@ public interface SupabaseApi {
 
 
     // =========================================================
+    // CONSULTAR ACCIÓN POR ALERTA
+    // =========================================================
+
+    @GET("rest/v1/acciones_alerta")
+    Call<List<Map<String, Object>>> verificarAccionExistente(
+            @Header("Authorization") String authorization,
+            @Query("select") String select,
+            @Query("alerta_id") String alertaId
+    );
+
+
+    // =========================================================
     // REGISTRAR ACCIÓN
     // =========================================================
 

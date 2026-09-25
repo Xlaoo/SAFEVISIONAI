@@ -134,18 +134,6 @@
             android:textColor="#333333"/>
 
 
-        <!-- BOTON REGISTRAR TRABAJADOR -->
-
-        <Button
-            android:id="@+id/btnRegistrarTrabajador"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginTop="14dp"
-            android:text="Registrar trabajador"
-            android:textAllCaps="false"
-            android:visibility="gone"/>
-
-
         <!-- IMPLEMENTO -->
 
         <TextView
@@ -157,29 +145,14 @@
             android:textSize="15sp"
             android:textStyle="bold"/>
 
-        <Spinner
-            android:id="@+id/spinnerImplemento"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginTop="6dp"/>
-
-
-        <!-- ACCION -->
-
         <TextView
+            android:id="@+id/txtImplemento"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="Acción"
-            android:textColor="#073A62"
-            android:textSize="15sp"
-            android:textStyle="bold"/>
-
-        <Spinner
-            android:id="@+id/spinnerAccion"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginTop="6dp"/>
+            android:text="Casco"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:padding="12dp" />
 
 
         <!-- OBSERVACION -->
