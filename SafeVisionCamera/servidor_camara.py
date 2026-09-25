@@ -1,3 +1,11 @@
+import sys
+if hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+
 from flask import request
 from flask import Flask, Response, jsonify, send_from_directory, request as flask_request
 import cv2
@@ -1777,6 +1785,84 @@ def foto(nombre):
         CARPETA_FOTOS,
         nombre
     )
+
+
+# ==========================================================
+# ELIMINAR FOTOS DE UNA ALERTA
+# ==========================================================
+
+@app.route("/eliminar_fotos", methods=["POST"])
+def endpoint_eliminar_fotos():
+    """
+    Elimina físicamente las imágenes asociadas a una alerta.
+    Valida estrictamente que los archivos pertenezcan a CARPETA_FOTOS
+    y no permite rutas arbitrarias fuera de esa carpeta.
+    """
+    datos = flask_request.get_json(silent=True) or flask_request.form or {}
+
+    archivos_recibidos = []
+    if isinstance(datos.get("fotos"), list):
+        archivos_recibidos.extend(datos.get("fotos"))
+    elif datos.get("fotos"):
+        archivos_recibidos.append(str(datos.get("fotos")))
+
+    for campo in ["foto_normal", "foto_zoom", "imagen", "imagen_normal", "imagen_zoom", "foto", "nombre"]:
+        valor = datos.get(campo)
+        if valor and isinstance(valor, str):
+            archivos_recibidos.append(valor)
+
+    carpeta_real = os.path.abspath(CARPETA_FOTOS)
+    eliminadas = []
+    no_encontradas = []
+    rechazadas = []
+
+    for item in archivos_recibidos:
+        if not item or not isinstance(item, str):
+            continue
+
+        item_limpio = item.strip()
+        if not item_limpio or item_limpio.lower() in ("null", "empty"):
+            continue
+
+        if "://" in item_limpio:
+            item_limpio = item_limpio.split("/")[-1].split("?")[0]
+
+        nombre_archivo = os.path.basename(item_limpio)
+        if not nombre_archivo:
+            continue
+
+        extension_valida = any(nombre_archivo.lower().endswith(ext) for ext in [".jpg", ".jpeg", ".png"])
+        es_alerta = nombre_archivo.startswith("alerta_")
+
+        ruta_archivo = os.path.abspath(os.path.join(carpeta_real, nombre_archivo))
+
+        esta_en_carpeta = (
+            os.path.commonpath([carpeta_real, ruta_archivo]) == carpeta_real
+            and ruta_archivo.startswith(carpeta_real + os.sep)
+        )
+
+        if not (extension_valida and es_alerta and esta_en_carpeta):
+            print(f"⚠️ Archivo rechazado por seguridad/formato: {nombre_archivo}")
+            rechazadas.append(nombre_archivo)
+            continue
+
+        if os.path.isfile(ruta_archivo):
+            try:
+                os.remove(ruta_archivo)
+                eliminadas.append(nombre_archivo)
+                print(f"🗑️ Imagen eliminada de SafeVisionCamera/alertas/: {nombre_archivo}")
+            except Exception as e:
+                print(f"⚠️ Error al eliminar {nombre_archivo}: {e}")
+        else:
+            no_encontradas.append(nombre_archivo)
+            print(f"ℹ️ Imagen no encontrada físicamente (ya no existía): {nombre_archivo}")
+
+    return jsonify({
+        "status": "ok",
+        "eliminadas": eliminadas,
+        "no_encontradas": no_encontradas,
+        "rechazadas": rechazadas
+    }), 200
 
 
 # ==========================================================

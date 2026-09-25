@@ -7,9 +7,19 @@ import android.widget.Toast;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import android.util.Log;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -431,6 +441,41 @@ public class AlertasActivity extends BaseActivity {
             int position
     ) {
 
+        // 1. Conservar referencias a imágenes ANTES de eliminar en Supabase
+        List<String> fotosParaEliminar = new ArrayList<>();
+        String urlServidor = null;
+
+        if (esReferenciaValida(alerta.getImagenNormal())) {
+            fotosParaEliminar.add(alerta.getImagenNormal());
+            if (urlServidor == null) {
+                urlServidor = extraerUrlServidor(alerta.getImagenNormal());
+            }
+        }
+
+        if (esReferenciaValida(alerta.getImagenZoom())) {
+            if (!fotosParaEliminar.contains(alerta.getImagenZoom())) {
+                fotosParaEliminar.add(alerta.getImagenZoom());
+            }
+            if (urlServidor == null) {
+                urlServidor = extraerUrlServidor(alerta.getImagenZoom());
+            }
+        }
+
+        if (esReferenciaValida(alerta.getImagen())) {
+            if (!fotosParaEliminar.contains(alerta.getImagen())) {
+                fotosParaEliminar.add(alerta.getImagen());
+            }
+            if (urlServidor == null) {
+                urlServidor = extraerUrlServidor(alerta.getImagen());
+            }
+        }
+
+        if (urlServidor == null) {
+            urlServidor = "http://10.237.144.107:5000";
+        }
+
+        final String urlServidorFinal = urlServidor;
+
         SupabaseApi api =
                 SupabaseClient
                         .getClient()
@@ -442,19 +487,19 @@ public class AlertasActivity extends BaseActivity {
         String filtroId =
                 "eq." + alerta.getId();
 
-        // 1. Eliminar acciones asociadas a la alerta primero (si existen)
+        // 2. Eliminar acciones asociadas a la alerta primero (si existen)
         api.eliminarAccionesAlerta(
                 authorization,
                 filtroId
         ).enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
-                ejecutarEliminacionAlerta(api, authorization, filtroId, alerta);
+                ejecutarEliminacionAlerta(api, authorization, filtroId, alerta, fotosParaEliminar, urlServidorFinal);
             }
 
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
-                ejecutarEliminacionAlerta(api, authorization, filtroId, alerta);
+                ejecutarEliminacionAlerta(api, authorization, filtroId, alerta, fotosParaEliminar, urlServidorFinal);
             }
         });
 
@@ -464,7 +509,9 @@ public class AlertasActivity extends BaseActivity {
             SupabaseApi api,
             String authorization,
             String filtroId,
-            Alerta alerta
+            Alerta alerta,
+            List<String> fotosParaEliminar,
+            String urlServidor
     ) {
 
         api.eliminarAlerta(
@@ -495,7 +542,10 @@ public class AlertasActivity extends BaseActivity {
                                     Toast.LENGTH_SHORT
                             ).show();
 
-                            // Recargar desde Supabase para asegurar fuente de verdad
+                            // 3. Solicitar al servidor Python que elimine SOLAMENTE las imágenes físicas
+                            solicitarEliminacionImagenesServidor(urlServidor, fotosParaEliminar);
+
+                            // 4. Recargar desde Supabase para asegurar fuente de verdad
                             cargarAlertas();
 
                         } else {
@@ -508,7 +558,7 @@ public class AlertasActivity extends BaseActivity {
                             } catch (Exception ignored) {
                             }
 
-                            android.util.Log.e("SAFEVISION_ELIMINAR", detalle);
+                            Log.e("SAFEVISION_ELIMINAR", detalle);
 
                             Toast.makeText(
                                     AlertasActivity.this,
@@ -539,6 +589,148 @@ public class AlertasActivity extends BaseActivity {
                 }
         );
 
+    }
+
+    // =========================================================
+    // SOLICITAR ELIMINACIÓN DE IMÁGENES FÍSICAS EN PYTHON
+    // =========================================================
+
+    private void solicitarEliminacionImagenesServidor(
+            String urlServidor,
+            List<String> fotos
+    ) {
+
+        if (fotos == null || fotos.isEmpty()) {
+            return;
+        }
+
+        new Thread(() -> {
+
+            HttpURLConnection conexion = null;
+
+            try {
+
+                String base =
+                        urlServidor != null && !urlServidor.isEmpty()
+                                ? urlServidor
+                                : "http://10.237.144.107:5000";
+
+                if (!base.endsWith("/")) {
+                    base += "/";
+                }
+
+                URL url =
+                        new URL(base + "eliminar_fotos");
+
+                conexion =
+                        (HttpURLConnection) url.openConnection();
+
+                conexion.setRequestMethod("POST");
+                conexion.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                conexion.setRequestProperty("Accept", "application/json");
+                conexion.setConnectTimeout(3000);
+                conexion.setReadTimeout(3000);
+                conexion.setDoOutput(true);
+
+                JsonObject json =
+                        new JsonObject();
+
+                JsonArray arrayFotos =
+                        new JsonArray();
+
+                for (String foto : fotos) {
+                    String nombreLimpio =
+                            extraerNombreArchivo(foto);
+
+                    if (nombreLimpio != null && !nombreLimpio.isEmpty()) {
+                        arrayFotos.add(nombreLimpio);
+                    }
+                }
+
+                json.add("fotos", arrayFotos);
+
+                byte[] body =
+                        json.toString().getBytes(StandardCharsets.UTF_8);
+
+                try (OutputStream os = conexion.getOutputStream()) {
+                    os.write(body);
+                    os.flush();
+                }
+
+                int codigo =
+                        conexion.getResponseCode();
+
+                if (codigo == 200) {
+                    Log.d(
+                            "SAFEVISION_FOTOS",
+                            "Imágenes físicas eliminadas del servidor correctamente"
+                    );
+                } else {
+                    Log.w(
+                            "SAFEVISION_FOTOS",
+                            "Advertencia: El servidor respondió HTTP " + codigo + " al eliminar imágenes"
+                    );
+                }
+
+            } catch (Exception e) {
+
+                // El fallo del servidor NO debe afectar la eliminación en Supabase
+                Log.w(
+                        "SAFEVISION_FOTOS",
+                        "Advertencia: No se pudieron eliminar las imágenes físicas en servidor: "
+                                + e.getMessage()
+                );
+
+            } finally {
+
+                if (conexion != null) {
+                    conexion.disconnect();
+                }
+
+            }
+
+        }).start();
+
+    }
+
+    private boolean esReferenciaValida(String ref) {
+        if (ref == null) {
+            return false;
+        }
+        String limpia = ref.trim();
+        return !limpia.isEmpty()
+                && !limpia.equalsIgnoreCase("null")
+                && !limpia.equalsIgnoreCase("empty");
+    }
+
+    private String extraerNombreArchivo(String urlOFoto) {
+        if (urlOFoto == null) {
+            return null;
+        }
+        String limpia = urlOFoto.trim();
+        if (limpia.isEmpty() || limpia.equalsIgnoreCase("null") || limpia.equalsIgnoreCase("empty")) {
+            return null;
+        }
+        int ultimaBarra = limpia.lastIndexOf('/');
+        if (ultimaBarra >= 0 && ultimaBarra < limpia.length() - 1) {
+            return limpia.substring(ultimaBarra + 1);
+        }
+        return limpia;
+    }
+
+    private String extraerUrlServidor(String urlOFoto) {
+        if (urlOFoto == null) {
+            return null;
+        }
+        String limpia = urlOFoto.trim();
+        if (limpia.startsWith("http://") || limpia.startsWith("https://")) {
+            try {
+                URI uri = new URI(limpia);
+                return uri.getScheme() + "://" + uri.getAuthority();
+            } catch (Exception ignored) {
+            }
+        }
+        return null;
     }
 
 
