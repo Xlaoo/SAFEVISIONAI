@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_card_white"
+    android:padding="20dp">
+
+    <!-- CABECERA DEL DIÁLOGO -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Detalle del Trabajador"
+            android:textColor="#073A62"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/btnCerrarDialog"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="4dp"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            app:tint="#64748B" />
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="12dp"
+        android:background="#E2E8F0" />
+
+    <!-- DATOS DEL TRABAJADOR -->
+    <TextView
+        android:id="@+id/txtDialogNombreTrabajador"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Nombre del Trabajador"
+        android:textColor="#0F172A"
+        android:textSize="17sp"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/txtDialogDniTrabajador"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="DNI: --------"
+            android:textColor="#475569"
+            android:textSize="13sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="  •  "
+            android:textColor="#94A3B8" />
+
+        <TextView
+            android:id="@+id/txtDialogAreaTrabajador"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Área: Producción"
+            android:textColor="#475569"
+            android:textSize="13sp" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/txtDialogTotalIncidencias"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="#FEE2E2"
+        android:paddingStart="10dp"
+        android:paddingTop="4dp"
+        android:paddingEnd="10dp"
+        android:paddingBottom="4dp"
+        android:text="Total de incidencias: 0"
+        android:textColor="#991B1B"
+        android:textSize="12sp"
+        android:textStyle="bold" />
+
+    <!-- SECCIÓN HISTORIAL -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="8dp"
+        android:text="Historial de Incidencias"
+        android:textColor="#1E293B"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerIncidenciasTrabajador"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxHeight="260dp"
+        android:nestedScrollingEnabled="true" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnEntendidoDialog"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="#073A62"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:text="Cerrar"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+</LinearLayout>

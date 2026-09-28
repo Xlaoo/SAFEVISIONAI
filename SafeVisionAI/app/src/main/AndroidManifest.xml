@@ -152,6 +152,15 @@
         <activity
             android:name=".RegistrarAccionActivity"
             android:exported="false" />
+        <activity
+            android:name=".ReportesActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ReportesTrabajadorActivity"
+            android:exported="false" />
+        <activity
+            android:name=".DetalleReporteActivity"
+            android:exported="false" />
 
         <!-- ================================================= -->
         <!-- SERVICIO DE NOTIFICACIONES -->

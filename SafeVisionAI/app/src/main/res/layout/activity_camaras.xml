@@ -227,10 +227,10 @@
         </LinearLayout>
 
 
-        <!-- AJUSTES -->
+        <!-- REPORTES -->
 
         <LinearLayout
-            android:id="@+id/navAjustes"
+            android:id="@+id/navReportes"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -242,15 +242,15 @@
             <ImageView
                 android:layout_width="22dp"
                 android:layout_height="22dp"
-                android:src="@android:drawable/ic_menu_manage"
-                android:contentDescription="Ajustes"
+                android:src="@drawable/ic_nav_reportes"
+                android:contentDescription="Reportes"
                 app:tint="#9EB8CA" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="3dp"
-                android:text="Ajustes"
+                android:text="Reportes"
                 android:textColor="#9EB8CA"
                 android:textSize="11sp" />
 

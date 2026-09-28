@@ -117,6 +117,73 @@ public interface SupabaseApi {
 
 
     // =========================================================
+    // OBTENER TODAS LAS ALERTAS PARA REPORTES
+    // =========================================================
+
+    @GET("rest/v1/alertas")
+    Call<List<Map<String, Object>>> obtenerAlertasReportes(
+            @Header("apikey") String apiKey,
+            @Header("Authorization") String authorization,
+            @Query("select") String select,
+            @Query("order") String order
+    );
+
+
+    // =========================================================
+    // OBTENER TODAS LAS ACCIONES PARA REPORTES
+    // =========================================================
+
+    @GET("rest/v1/acciones_alerta")
+    Call<List<Map<String, Object>>> obtenerAccionesReportes(
+            @Header("apikey") String apiKey,
+            @Header("Authorization") String authorization,
+            @Query("select") String select,
+            @Query("order") String order
+    );
+
+
+    // =========================================================
+    // OBTENER ALERTAS POR TRABAJADOR
+    // =========================================================
+
+    @GET("rest/v1/alertas")
+    Call<List<Map<String, Object>>> obtenerAlertasPorTrabajador(
+            @Header("apikey") String apiKey,
+            @Header("Authorization") String authorization,
+            @Query("select") String select,
+            @Query("trabajador_id") String trabajadorId,
+            @Query("order") String order
+    );
+
+
+    // =========================================================
+    // OBTENER ALERTA POR ID
+    // =========================================================
+
+    @GET("rest/v1/alertas")
+    Call<List<Map<String, Object>>> obtenerAlertaPorId(
+            @Header("apikey") String apiKey,
+            @Header("Authorization") String authorization,
+            @Query("select") String select,
+            @Query("id") String id
+    );
+
+
+    // =========================================================
+    // OBTENER ACCIONES POR TRABAJADOR
+    // =========================================================
+
+    @GET("rest/v1/acciones_alerta")
+    Call<List<Map<String, Object>>> obtenerAccionesPorTrabajador(
+            @Header("apikey") String apiKey,
+            @Header("Authorization") String authorization,
+            @Query("select") String select,
+            @Query("trabajador_id") String trabajadorId,
+            @Query("order") String order
+    );
+
+
+    // =========================================================
     // BUSCAR TRABAJADOR POR DNI
     // =========================================================
 

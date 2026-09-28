@@ -128,8 +128,8 @@ public class BaseActivity extends AppCompatActivity {
         View navAlertas =
                 findViewById(R.id.navAlertas);
 
-        View navAjustes =
-                findViewById(R.id.navAjustes);
+        View navReportes =
+                findViewById(R.id.navReportes);
 
 
         // =====================================================
@@ -181,14 +181,16 @@ public class BaseActivity extends AppCompatActivity {
 
 
         // =====================================================
-        // AJUSTES
+        // REPORTES
         // =====================================================
 
-        if (navAjustes != null) {
+        if (navReportes != null) {
 
-            navAjustes.setOnClickListener(v -> {
+            navReportes.setOnClickListener(v -> {
 
-                // Pendiente implementar Ajustes
+                navegarA(
+                        ReportesActivity.class
+                );
 
             });
         }

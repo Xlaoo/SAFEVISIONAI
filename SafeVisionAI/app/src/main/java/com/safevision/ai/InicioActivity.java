@@ -381,7 +381,7 @@ public class InicioActivity extends BaseActivity {
 
                         authorization,
 
-                        "id,nombres,apellidos,dni,cargo,area,foto",
+                        "id,nombres,apellidos,dni,area,foto",
 
                         "created_at.asc"
 
@@ -503,14 +503,16 @@ public class InicioActivity extends BaseActivity {
                                         );
 
 
-                                        lista.append(
-                                                cargo
-                                        );
+                                        if (!cargo.isEmpty()) {
+                                            lista.append(
+                                                    cargo
+                                            );
 
 
-                                        lista.append(
-                                                "  •  "
-                                        );
+                                            lista.append(
+                                                    "  •  "
+                                            );
+                                        }
 
 
                                         lista.append(
