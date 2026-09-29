@@ -105,55 +105,99 @@
             android:paddingBottom="10dp"/>
 
 
-        <!-- FOTO 1 -->
-
-        <TextView
+        <!-- FOTO 1: GENERAL -->
+        <LinearLayout
+            android:id="@+id/layoutFotoGeneralAlerta"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="📸 Captura completa"
-            android:textColor="#333333"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:paddingBottom="6dp"/>
+            android:orientation="vertical">
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="📸 Foto general"
+                android:textColor="#333333"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:paddingBottom="6dp"/>
 
-        <ImageView
-            android:id="@+id/imgFotoNormal"
-            android:layout_width="match_parent"
-            android:layout_height="220dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
-            android:background="#DDE3E8"
-            android:scaleType="fitCenter"
-            android:contentDescription="Foto completa de la alerta"/>
+            <ImageView
+                android:id="@+id/imgFotoNormal"
+                android:layout_width="match_parent"
+                android:layout_height="220dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:background="#DDE3E8"
+                android:scaleType="fitCenter"
+                android:contentDescription="Foto general de la alerta"/>
 
+        </LinearLayout>
 
-        <!-- FOTO 2 -->
-
-        <TextView
+        <!-- FOTO 2: ZOOM CASCO -->
+        <LinearLayout
+            android:id="@+id/layoutZoomCascoAlerta"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="🔍 Captura ampliada"
-            android:textColor="#333333"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:paddingTop="16dp"
-            android:paddingBottom="6dp"/>
+            android:layout_marginTop="16dp"
+            android:orientation="vertical">
 
+            <TextView
+                android:id="@+id/txtTituloZoomCascoAlerta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🔍 Foto zoom casco"
+                android:textColor="#333333"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:paddingBottom="6dp"/>
 
-        <ImageView
-            android:id="@+id/imgFotoZoom"
+            <ImageView
+                android:id="@+id/imgFotoZoom"
+                android:layout_width="match_parent"
+                android:layout_height="220dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:background="#DDE3E8"
+                android:scaleType="fitCenter"
+                android:contentDescription="Foto zoom casco de la alerta"/>
+
+        </LinearLayout>
+
+        <!-- FOTO 3: ZOOM CHALECO -->
+        <LinearLayout
+            android:id="@+id/layoutZoomChalecoAlerta"
             android:layout_width="match_parent"
-            android:layout_height="220dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
-            android:background="#DDE3E8"
-            android:scaleType="fitCenter"
-            android:contentDescription="Foto ampliada de la alerta"/>
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/txtTituloZoomChalecoAlerta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🔍 Foto zoom chaleco"
+                android:textColor="#333333"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:paddingBottom="6dp"/>
+
+            <ImageView
+                android:id="@+id/imgFotoZoomChaleco"
+                android:layout_width="match_parent"
+                android:layout_height="220dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:background="#DDE3E8"
+                android:scaleType="fitCenter"
+                android:contentDescription="Foto zoom chaleco de la alerta"/>
+
+        </LinearLayout>
 
 
         <!-- ================================================= -->

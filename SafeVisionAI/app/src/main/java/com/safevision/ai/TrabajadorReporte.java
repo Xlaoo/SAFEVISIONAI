@@ -58,7 +58,10 @@ public class TrabajadorReporte {
     }
 
     public String getDni() {
-        return dni != null ? dni : "";
+        if (dni == null || dni.trim().isEmpty() || "12345678".equals(dni.trim())) {
+            return "";
+        }
+        return dni.trim();
     }
 
     public String getNombres() {
@@ -72,9 +75,27 @@ public class TrabajadorReporte {
     public String getNombreCompleto() {
         String n = getNombres().trim();
         String a = getApellidos().trim();
-        if (n.isEmpty() && a.isEmpty()) {
-            return "Trabajador #" + id;
+
+        if (a.toLowerCase().contains("12345678") || a.equalsIgnoreCase("DNI") || a.startsWith("DNI ")) {
+            a = "";
         }
+
+        if (n.equalsIgnoreCase("Trabajador") && a.isEmpty()) {
+            return "Trabajador";
+        }
+
+        if (n.isEmpty() && a.isEmpty()) {
+            return "Trabajador";
+        }
+
+        if (n.isEmpty()) {
+            return a;
+        }
+
+        if (a.isEmpty()) {
+            return n;
+        }
+
         return (n + " " + a).trim();
     }
 

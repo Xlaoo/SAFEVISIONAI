@@ -43,9 +43,20 @@ public class DetalleReporteActivity extends BaseActivity {
     private ProgressBar progressBarFoto;
     private TextView txtSinFoto;
 
+    private View layoutZoomCasco;
+    private ImageView imgZoomCasco;
+    private ProgressBar progressBarZoomCasco;
+    private TextView txtSinZoomCasco;
+
+    private View layoutZoomChaleco;
+    private ImageView imgZoomChaleco;
+    private ProgressBar progressBarZoomChaleco;
+    private TextView txtSinZoomChaleco;
+
     private TextView txtTrabajador;
     private TextView txtFecha;
     private TextView txtHora;
+    private TextView txtFechaHora;
     private TextView txtArea;
     private TextView txtCamara;
     private TextView txtDescripcion;
@@ -94,9 +105,20 @@ public class DetalleReporteActivity extends BaseActivity {
         progressBarFoto = findViewById(R.id.progressBarFotoReporte);
         txtSinFoto = findViewById(R.id.txtSinFotoReporte);
 
+        layoutZoomCasco = findViewById(R.id.layoutZoomCascoReporte);
+        imgZoomCasco = findViewById(R.id.imgZoomCascoReporte);
+        progressBarZoomCasco = findViewById(R.id.progressBarZoomCasco);
+        txtSinZoomCasco = findViewById(R.id.txtSinZoomCasco);
+
+        layoutZoomChaleco = findViewById(R.id.layoutZoomChalecoReporte);
+        imgZoomChaleco = findViewById(R.id.imgZoomChalecoReporte);
+        progressBarZoomChaleco = findViewById(R.id.progressBarZoomChaleco);
+        txtSinZoomChaleco = findViewById(R.id.txtSinZoomChaleco);
+
         txtTrabajador = findViewById(R.id.txtDetalleTrabajador);
         txtFecha = findViewById(R.id.txtDetalleFecha);
         txtHora = findViewById(R.id.txtDetalleHora);
+        txtFechaHora = findViewById(R.id.txtDetalleFechaHora);
         txtArea = findViewById(R.id.txtDetalleArea);
         txtCamara = findViewById(R.id.txtDetalleCamara);
         txtDescripcion = findViewById(R.id.txtDetalleDescripcion);
@@ -144,15 +166,31 @@ public class DetalleReporteActivity extends BaseActivity {
     }
 
     private void mostrarDatosEnPantalla(ReporteItem item) {
-        txtTrabajador.setText(item.getTrabajadorNombre());
-        txtFecha.setText(item.getFecha());
-        txtHora.setText(item.getHora());
+        String nomTrab = item.getTrabajadorNombre();
+        if (nomTrab.toLowerCase().contains("12345678")) {
+            nomTrab = nomTrab.replaceAll("(?i)dni\\s*12345678", "").replaceAll("12345678", "").trim();
+            if (nomTrab.isEmpty()) {
+                nomTrab = "Trabajador";
+            }
+        }
+        txtTrabajador.setText(nomTrab);
+
+        if (txtFecha != null) txtFecha.setText(item.getFecha());
+        if (txtHora != null) txtHora.setText(item.getHora());
+        String fh = (item.getFecha() + " " + item.getHora()).trim();
+        if (txtFechaHora != null) {
+            txtFechaHora.setText(fh.isEmpty() ? "—" : fh);
+        }
+
         txtArea.setText(item.getArea());
         txtCamara.setText(item.getCamara());
         txtDescripcion.setText(item.getDescripcion());
         txtTotalVeces.setText(String.valueOf(item.getTotalVecesReportado()));
 
-        cargarImagenReal(item.getImagen());
+        // =====================================================
+        // GESTIÓN DE FOTOGRAFÍAS SEGÚN IMPLEMENTOS FALTANTES
+        // =====================================================
+        mostrarFotosSegunImplementos(item);
 
         if (item.isRevisado()) {
             // REPORTE REVISADO (SEGUNDA IMAGEN)
@@ -175,6 +213,50 @@ public class DetalleReporteActivity extends BaseActivity {
 
             cardDetallesRevision.setVisibility(View.GONE);
             cardPendienteAccion.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void mostrarFotosSegunImplementos(ReporteItem item) {
+        if (item == null) return;
+
+        String desc = item.getDescripcion() != null ? item.getDescripcion().toLowerCase() : "";
+        boolean faltaCasco = !item.isCasco() || desc.contains("casco");
+        boolean faltaChaleco = !item.isChaleco() || desc.contains("chaleco");
+        if (!faltaCasco && !faltaChaleco) {
+            faltaCasco = true;
+        }
+
+        String urlGeneral = limpiarUrl(item.getImagenNormal());
+        if (urlGeneral.isEmpty()) {
+            urlGeneral = limpiarUrl(item.getImagen());
+        }
+        if (urlGeneral.isEmpty()) {
+            urlGeneral = limpiarUrl(item.getImagenZoom());
+        }
+
+        cargarImagenReal(urlGeneral, imgEvidencia, progressBarFoto, txtSinFoto);
+
+        String urlZoom = limpiarUrl(item.getImagenZoom());
+        if (urlZoom.isEmpty()) {
+            urlZoom = urlGeneral;
+        }
+
+        if (faltaCasco && faltaChaleco) {
+            // CASO A: CASCO + CHALECO = 3 FOTOGRAFÍAS (General + Zoom Casco + Zoom Chaleco)
+            layoutZoomCasco.setVisibility(View.VISIBLE);
+            layoutZoomChaleco.setVisibility(View.VISIBLE);
+            cargarImagenReal(urlZoom, imgZoomCasco, progressBarZoomCasco, txtSinZoomCasco);
+            cargarImagenReal(urlZoom, imgZoomChaleco, progressBarZoomChaleco, txtSinZoomChaleco);
+        } else if (faltaCasco) {
+            // CASO B: SOLO CASCO = 2 FOTOGRAFÍAS (General + Zoom Casco)
+            layoutZoomCasco.setVisibility(View.VISIBLE);
+            layoutZoomChaleco.setVisibility(View.GONE);
+            cargarImagenReal(urlZoom, imgZoomCasco, progressBarZoomCasco, txtSinZoomCasco);
+        } else {
+            // CASO C: SOLO CHALECO = 2 FOTOGRAFÍAS (General + Zoom Chaleco)
+            layoutZoomCasco.setVisibility(View.GONE);
+            layoutZoomChaleco.setVisibility(View.VISIBLE);
+            cargarImagenReal(urlZoom, imgZoomChaleco, progressBarZoomChaleco, txtSinZoomChaleco);
         }
     }
 
@@ -209,6 +291,35 @@ public class DetalleReporteActivity extends BaseActivity {
                     Map<String, Object> alertaActual = lista.get(0);
                     String estadoRaw = obtenerTextoSeguro(alertaActual.get("estado")).trim().toUpperCase();
                     boolean esRevisado = "ATENDIDA".equals(estadoRaw) || "REVISADO".equals(estadoRaw);
+
+                    // Sincronizar fotografías y estados EPP desde Supabase
+                    String supImagen = limpiarUrl(obtenerTextoSeguro(alertaActual.get("imagen")));
+                    String supImagenNormal = limpiarUrl(obtenerTextoSeguro(alertaActual.get("imagen_normal")));
+                    String supImagenZoom = limpiarUrl(obtenerTextoSeguro(alertaActual.get("imagen_zoom")));
+                    boolean repCasco = Boolean.TRUE.equals(alertaActual.get("casco"));
+                    boolean repChaleco = Boolean.TRUE.equals(alertaActual.get("chaleco"));
+
+                    if (reporteItem != null) {
+                        boolean fotosActualizadas = false;
+                        if (!supImagen.isEmpty() && !supImagen.equals(reporteItem.getImagen())) {
+                            reporteItem.setImagen(supImagen);
+                            fotosActualizadas = true;
+                        }
+                        if (!supImagenNormal.isEmpty() && !supImagenNormal.equals(reporteItem.getImagenNormal())) {
+                            reporteItem.setImagenNormal(supImagenNormal);
+                            fotosActualizadas = true;
+                        }
+                        if (!supImagenZoom.isEmpty() && !supImagenZoom.equals(reporteItem.getImagenZoom())) {
+                            reporteItem.setImagenZoom(supImagenZoom);
+                            fotosActualizadas = true;
+                        }
+                        reporteItem.setCasco(repCasco);
+                        reporteItem.setChaleco(repChaleco);
+
+                        if (fotosActualizadas) {
+                            runOnUiThread(() -> mostrarFotosSegunImplementos(reporteItem));
+                        }
+                    }
 
                     if (esRevisado) {
                         // Buscar si ya tiene acción registrada
@@ -263,47 +374,118 @@ public class DetalleReporteActivity extends BaseActivity {
     // =========================================================
     // DESCARGAR IMAGEN REAL TOMADA POR LA CÁMARA
     // =========================================================
-    private void cargarImagenReal(String urlFoto) {
-        if (urlFoto == null || urlFoto.trim().isEmpty() || !urlFoto.startsWith("http")) {
-            progressBarFoto.setVisibility(View.GONE);
-            txtSinFoto.setVisibility(View.VISIBLE);
+    private void cargarImagenReal(String urlFoto, ImageView targetImageView, ProgressBar progressBar, TextView txtError) {
+        final String urlLimpia = limpiarUrl(urlFoto);
+        if (urlLimpia.isEmpty() || !urlLimpia.startsWith("http")) {
+            if (progressBar != null) progressBar.setVisibility(View.GONE);
+            if (txtError != null) txtError.setVisibility(View.VISIBLE);
             return;
         }
 
-        progressBarFoto.setVisibility(View.VISIBLE);
-        txtSinFoto.setVisibility(View.GONE);
+        if (progressBar != null) progressBar.setVisibility(View.VISIBLE);
+        if (txtError != null) txtError.setVisibility(View.GONE);
 
         executor.execute(() -> {
-            HttpURLConnection conexion = null;
-            try {
-                URL url = new URL(urlFoto);
-                conexion = (HttpURLConnection) url.openConnection();
-                conexion.setConnectTimeout(10000);
-                conexion.setReadTimeout(10000);
-                conexion.setDoInput(true);
-                conexion.connect();
+            Bitmap bitmap = descargarBitmap(urlLimpia);
 
-                InputStream input = conexion.getInputStream();
-                Bitmap bitmap = BitmapFactory.decodeStream(input);
-
-                runOnUiThread(() -> {
-                    progressBarFoto.setVisibility(View.GONE);
-                    if (bitmap != null && !isFinishing() && !isDestroyed()) {
-                        imgEvidencia.setImageBitmap(bitmap);
-                        txtSinFoto.setVisibility(View.GONE);
-                    } else {
-                        txtSinFoto.setVisibility(View.VISIBLE);
-                    }
-                });
-            } catch (Exception e) {
-                runOnUiThread(() -> {
-                    progressBarFoto.setVisibility(View.GONE);
-                    txtSinFoto.setVisibility(View.VISIBLE);
-                });
-            } finally {
-                if (conexion != null) conexion.disconnect();
+            // Si falló y la URL contiene "/fotos/", intentar con la IP activa de CameraConfig
+            if (bitmap == null && urlLimpia.contains("/fotos/")) {
+                String fallbackUrl = resolverUrlConIpActiva(urlLimpia);
+                if (fallbackUrl != null && !fallbackUrl.equals(urlLimpia)) {
+                    Log.d(TAG, "Reintentando descarga con IP activa: " + fallbackUrl);
+                    bitmap = descargarBitmap(fallbackUrl);
+                }
             }
+
+            // Si aún falló o la red cambió, intentar recuperar desde Supabase Storage
+            if (bitmap == null && urlLimpia.contains("/fotos/")) {
+                String storageUrl = resolverUrlSupabaseStorage(urlLimpia);
+                if (storageUrl != null && !storageUrl.equals(urlLimpia)) {
+                    Log.d(TAG, "Reintentando descarga desde Supabase Storage: " + storageUrl);
+                    bitmap = descargarBitmap(storageUrl);
+                }
+            }
+
+            final Bitmap resultado = bitmap;
+            runOnUiThread(() -> {
+                if (progressBar != null) progressBar.setVisibility(View.GONE);
+                if (resultado != null && !isFinishing() && !isDestroyed()) {
+                    if (targetImageView != null) targetImageView.setImageBitmap(resultado);
+                    if (txtError != null) txtError.setVisibility(View.GONE);
+                } else {
+                    if (targetImageView != null) {
+                        targetImageView.setImageResource(android.R.drawable.ic_menu_report_image);
+                    }
+                    if (txtError != null) txtError.setVisibility(View.VISIBLE);
+                }
+            });
         });
+    }
+
+    private Bitmap descargarBitmap(String urlStr) {
+        HttpURLConnection conexion = null;
+        InputStream input = null;
+        try {
+            URL url = new URL(urlStr);
+            conexion = (HttpURLConnection) url.openConnection();
+            conexion.setConnectTimeout(6000);
+            conexion.setReadTimeout(6000);
+            conexion.setDoInput(true);
+            conexion.connect();
+
+            if (conexion.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                input = conexion.getInputStream();
+                return BitmapFactory.decodeStream(input);
+            }
+            return null;
+        } catch (Exception e) {
+            Log.w(TAG, "Error descargando imagen de: " + urlStr + " (" + e.getMessage() + ")");
+            return null;
+        } finally {
+            if (input != null) {
+                try {
+                    input.close();
+                } catch (Exception ignored) {}
+            }
+            if (conexion != null) {
+                conexion.disconnect();
+            }
+        }
+    }
+
+    private String resolverUrlConIpActiva(String urlOriginal) {
+        if (urlOriginal == null || !urlOriginal.contains("/fotos/")) return null;
+        try {
+            int idx = urlOriginal.indexOf("/fotos/");
+            String pathFotos = urlOriginal.substring(idx);
+            return "http://" + CameraConfig.IP_SERVIDOR + ":" + CameraConfig.PUERTO + pathFotos;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private String resolverUrlSupabaseStorage(String urlOriginal) {
+        if (urlOriginal == null || !urlOriginal.contains("/fotos/")) return null;
+        try {
+            int idx = urlOriginal.indexOf("/fotos/");
+            String nombreArchivo = urlOriginal.substring(idx + 7);
+            String urlBase = SupabaseConfig.URL;
+            if (!urlBase.endsWith("/")) {
+                urlBase += "/";
+            }
+            return urlBase + "storage/v1/object/public/fotos-alertas/" + nombreArchivo;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private String limpiarUrl(String url) {
+        if (url == null) return "";
+        String trimmed = url.trim();
+        if (trimmed.equalsIgnoreCase("null") || trimmed.equalsIgnoreCase("empty")) {
+            return "";
+        }
+        return trimmed;
     }
 
     private ZonedDateTime parsearFechaIso(String fechaIso, ZoneId zonaLocal) {

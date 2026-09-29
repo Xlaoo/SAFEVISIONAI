@@ -7,8 +7,6 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.TextView;
 
-import org.json.JSONObject;
-
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -27,366 +25,223 @@ public class DetalleCamaraActivity extends BaseActivity {
     private TextView txtFechaHora;
     private TextView txtEstadoPersona;
 
+    // Vistas para el estado EPP unificado
+    private TextView txtEstadoEpp;
+    private TextView txtEstadoCasco;
+    private TextView txtEstadoChaleco;
+
     private WebView webCamara;
 
     private Handler handler = new Handler();
-
     private OkHttpClient clienteHttp = new OkHttpClient();
 
-    // =========================================================
-    // IP DE LA LAPTOP
-    // =========================================================
-
-    private static final String IP_LAPTOP = "10.237.144.107";
-
-    private static final String URL_BASE =
-            "http://" + IP_LAPTOP + ":5000/";
-
-    private static final String URL_VIDEO =
-            URL_BASE + "video";
-
-    private static final String URL_ESTADO =
-            URL_BASE + "estado";
-
+    private String urlBase = "";
+    private String urlVideo = "";
+    private String urlEstado = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
-
-        setContentView(
-                R.layout.activity_detalle_camara
-        );
-
+        setContentView(R.layout.activity_detalle_camara);
 
         // =====================================================
-        // REFERENCIAS
+        // REFERENCIAS UI
         // =====================================================
+        titulo = findViewById(R.id.txtTituloCamara);
+        btnRegresar = findViewById(R.id.btnRegresar);
+        txtFechaHora = findViewById(R.id.txtFechaHora);
+        txtEstadoPersona = findViewById(R.id.txtEstadoPersona);
 
-        titulo =
-                findViewById(
-                        R.id.txtTituloCamara
-                );
+        txtEstadoEpp = findViewById(R.id.txtEstadoEpp);
+        txtEstadoCasco = findViewById(R.id.txtEstadoCasco);
+        txtEstadoChaleco = findViewById(R.id.txtEstadoChaleco);
 
-        btnRegresar =
-                findViewById(
-                        R.id.btnRegresar
-                );
+        webCamara = findViewById(R.id.webCamaraDetalle);
 
-        txtFechaHora =
-                findViewById(
-                        R.id.txtFechaHora
-                );
+        // =====================================================
+        // CONFIGURACIÓN DE URL
+        // =====================================================
+        String urlIntent = getIntent().getStringExtra("URL");
+        if (urlIntent != null && !urlIntent.isEmpty()) {
+            urlBase = urlIntent.endsWith("/") ? urlIntent : urlIntent + "/";
+        } else {
+            urlBase = CameraConfig.getUrlBase();
+        }
 
-        txtEstadoPersona =
-                findViewById(
-                        R.id.txtEstadoPersona
-                );
-
-        webCamara =
-                findViewById(
-                        R.id.webCamaraDetalle
-                );
-
+        urlVideo = urlBase + "video";
+        urlEstado = urlBase + "estado";
 
         // =====================================================
         // NOMBRE DE LA CÁMARA
         // =====================================================
-
-        String camara =
-                getIntent().getStringExtra("CAMARA");
-
+        String camara = getIntent().getStringExtra("CAMARA");
         if (camara == null || camara.isEmpty()) {
-
-            camara = "Casco";
-
+            camara = "Producción";
         }
-
-        titulo.setText(
-                "Cámara - " + camara
-        );
-
+        titulo.setText("Cámara - " + camara);
 
         // =====================================================
         // BOTÓN REGRESAR
         // =====================================================
-
-        btnRegresar.setOnClickListener(
-                v -> finish()
-        );
-
+        btnRegresar.setOnClickListener(v -> finish());
 
         // =====================================================
-        // CONFIGURACIÓN WEBVIEW
+        // CONFIGURACIÓN WEBVIEW (VIDEO EN VIVO)
         // =====================================================
-
-        WebSettings settings =
-                webCamara.getSettings();
-
+        WebSettings settings = webCamara.getSettings();
         settings.setJavaScriptEnabled(true);
-
         settings.setDomStorageEnabled(true);
-
         settings.setLoadWithOverviewMode(true);
-
         settings.setUseWideViewPort(true);
-
         settings.setBuiltInZoomControls(false);
-
         settings.setDisplayZoomControls(false);
+        settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
 
-        settings.setMixedContentMode(
-                WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-        );
-
-
-        webCamara.setWebViewClient(
-                new android.webkit.WebViewClient()
-        );
-
-
-        // =====================================================
-        // MOSTRAR VIDEO DE LA CÁMARA
-        // =====================================================
-
-        webCamara.loadUrl(
-                URL_VIDEO
-        );
-
+        webCamara.setWebViewClient(new android.webkit.WebViewClient());
+        webCamara.loadUrl(urlVideo);
 
         // =====================================================
         // FECHA Y HORA
         // =====================================================
-
         actualizarFechaHora();
 
-
         // =====================================================
-        // CONSULTAR ESTADO DEL CASCO
+        // CONSULTAR ESTADO EPP (CASCO + CHALECO)
         // =====================================================
-
-        consultarEstadoCasco();
-
+        consultarEstadoEpp();
     }
 
-
     // =========================================================
-    // CONSULTAR ESTADO DEL CASCO
+    // CONSULTAR ESTADO EPP DEL SERVIDOR (/estado)
     // =========================================================
+    private void consultarEstadoEpp() {
+        Request request = new Request.Builder()
+                .url(urlEstado)
+                .get()
+                .build();
 
-    private void consultarEstadoCasco() {
-
-        Request request =
-                new Request.Builder()
-                        .url(URL_ESTADO)
-                        .get()
-                        .build();
-
-
-        clienteHttp.newCall(
-                request
-        ).enqueue(
-                new Callback() {
-
-                    @Override
-                    public void onFailure(
-                            Call call,
-                            IOException e
-                    ) {
-
-                        runOnUiThread(() -> {
-
-                            txtEstadoPersona.setText(
-                                    "🔴 Sin conexión con cámara"
-                            );
-
-                            txtEstadoPersona.setTextColor(
-                                    Color.RED
-                            );
-
-                        });
-
+        clienteHttp.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                runOnUiThread(() -> {
+                    txtEstadoPersona.setText("🔴 Sin conexión con cámara");
+                    txtEstadoPersona.setTextColor(Color.RED);
+                    if (txtEstadoEpp != null) {
+                        txtEstadoEpp.setText("ESTADO: SIN CONEXIÓN");
+                        txtEstadoEpp.setTextColor(Color.RED);
                     }
-
-
-                    @Override
-                    public void onResponse(
-                            Call call,
-                            Response response
-                    ) throws IOException {
-
-                        if (!response.isSuccessful()
-                                || response.body() == null) {
-
-                            return;
-                        }
-
-
-                        String respuesta =
-                                response.body().string();
-
-
-                        try {
-
-                            JSONObject json =
-                                    new JSONObject(
-                                            respuesta
-                                    );
-
-
-                            // =================================================
-                            // OBJETO CASCO
-                            // =================================================
-
-                            JSONObject casco =
-                                    json.getJSONObject(
-                                            "casco"
-                                    );
-
-
-                            String estado =
-                                    casco.getString(
-                                            "estado"
-                                    );
-
-
-                            // =================================================
-                            // ACTUALIZAR PANTALLA
-                            // =================================================
-
-                            runOnUiThread(() -> {
-
-                                if (
-                                        estado.equalsIgnoreCase(
-                                                "CASCO OK"
-                                        )
-                                                ||
-                                                estado.equalsIgnoreCase(
-                                                        "PUESTO"
-                                                )
-                                ) {
-
-                                    txtEstadoPersona.setText(
-                                            "🟢 CASCO PUESTO"
-                                    );
-
-                                    txtEstadoPersona.setTextColor(
-                                            Color.rgb(
-                                                    0,
-                                                    168,
-                                                    90
-                                            )
-                                    );
-
-                                } else {
-
-                                    txtEstadoPersona.setText(
-                                            "🔴 CASCO RETIRADO"
-                                    );
-
-                                    txtEstadoPersona.setTextColor(
-                                            Color.RED
-                                    );
-
-                                }
-
-                            });
-
-
-                        } catch (Exception e) {
-
-                            runOnUiThread(() -> {
-
-                                txtEstadoPersona.setText(
-                                        "⚠️ Estado no disponible"
-                                );
-
-                                txtEstadoPersona.setTextColor(
-                                        Color.DKGRAY
-                                );
-
-                            });
-
-                        }
-
+                    if (txtEstadoCasco != null) {
+                        txtEstadoCasco.setText("CASCO: --");
+                        txtEstadoCasco.setTextColor(Color.DKGRAY);
                     }
+                    if (txtEstadoChaleco != null) {
+                        txtEstadoChaleco.setText("CHALECO: --");
+                        txtEstadoChaleco.setTextColor(Color.DKGRAY);
+                    }
+                });
+            }
 
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (!response.isSuccessful() || response.body() == null) {
+                    return;
                 }
-        );
 
+                String respuesta = response.body().string();
+                EstadoEpp epp = EstadoEpp.fromJson(respuesta);
 
-        // =====================================================
-        // VOLVER A CONSULTAR EN 1 SEGUNDO
-        // =====================================================
+                runOnUiThread(() -> {
+                    actualizarUiEstado(epp);
+                });
+            }
+        });
 
-        handler.postDelayed(
-                this::consultarEstadoCasco,
-                1000
-        );
-
+        // Consultar cada 1 segundo periódicamente
+        handler.postDelayed(this::consultarEstadoEpp, 1000);
     }
 
+    // =========================================================
+    // ACTUALIZAR INTERFAZ DE USUARIO CON LOS DATOS DE EPP
+    // =========================================================
+    private void actualizarUiEstado(EstadoEpp epp) {
+        // 1. Estado Casco
+        if (txtEstadoCasco != null) {
+            if (epp.isCasco()) {
+                txtEstadoCasco.setText(String.format(Locale.getDefault(), "CASCO: OK (%.0f%%)", epp.getPorcentajeCasco()));
+                txtEstadoCasco.setTextColor(Color.rgb(0, 168, 90)); // Verde
+            } else {
+                txtEstadoCasco.setText("CASCO: FALTA");
+                txtEstadoCasco.setTextColor(Color.RED);
+            }
+        }
+
+        // 2. Estado Chaleco
+        if (txtEstadoChaleco != null) {
+            if (epp.isChaleco()) {
+                txtEstadoChaleco.setText(String.format(Locale.getDefault(), "CHALECO: OK (%.0f%%)", epp.getPorcentajeChaleco()));
+                txtEstadoChaleco.setTextColor(Color.rgb(0, 168, 90)); // Verde
+            } else {
+                txtEstadoChaleco.setText("CHALECO: FALTA");
+                txtEstadoChaleco.setTextColor(Color.RED);
+            }
+        }
+
+        // 3. Estado General EPP
+        if (txtEstadoEpp != null) {
+            String estadoStr = epp.getEstado();
+            txtEstadoEpp.setText("ESTADO: " + estadoStr);
+
+            if ("EPP COMPLETO".equalsIgnoreCase(estadoStr)) {
+                txtEstadoEpp.setTextColor(Color.rgb(0, 168, 90)); // Verde
+            } else if ("BUSCANDO PERSONA".equalsIgnoreCase(estadoStr)) {
+                txtEstadoEpp.setTextColor(Color.rgb(120, 120, 120)); // Gris
+            } else if ("FALTAN CASCO Y CHALECO".equalsIgnoreCase(estadoStr)) {
+                txtEstadoEpp.setTextColor(Color.RED); // Rojo crítico
+            } else {
+                // FALTA CASCO o FALTA CHALECO
+                txtEstadoEpp.setTextColor(Color.rgb(255, 140, 0)); // Naranja
+            }
+        }
+
+        // 4. Retrocompatibilidad con txtEstadoPersona
+        if (txtEstadoPersona != null) {
+            if (epp.isEppCompleto()) {
+                txtEstadoPersona.setText("🟢 EPP COMPLETO");
+                txtEstadoPersona.setTextColor(Color.rgb(0, 168, 90));
+            } else if (epp.isRostroDetectado()) {
+                txtEstadoPersona.setText("⚠️ " + epp.getEstado());
+                txtEstadoPersona.setTextColor(Color.rgb(255, 140, 0));
+            } else {
+                txtEstadoPersona.setText("⚪ Buscando persona...");
+                txtEstadoPersona.setTextColor(Color.DKGRAY);
+            }
+        }
+    }
 
     // =========================================================
     // FECHA Y HORA
     // =========================================================
-
     private void actualizarFechaHora() {
-
-        handler.post(
-                new Runnable() {
-
-                    @Override
-                    public void run() {
-
-                        SimpleDateFormat formato =
-                                new SimpleDateFormat(
-                                        "dd/MM/yyyy HH:mm:ss",
-                                        Locale.getDefault()
-                                );
-
-
-                        String fecha =
-                                formato.format(
-                                        new Date()
-                                );
-
-
-                        txtFechaHora.setText(
-                                fecha
-                        );
-
-
-                        handler.postDelayed(
-                                this,
-                                1000
-                        );
-
-                    }
-
-                }
-        );
-
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault());
+                txtFechaHora.setText(formato.format(new Date()));
+                handler.postDelayed(this, 1000);
+            }
+        });
     }
-
 
     // =========================================================
     // DESTRUIR ACTIVITY
     // =========================================================
-
     @Override
     protected void onDestroy() {
-
-        handler.removeCallbacksAndMessages(
-                null
-        );
-
-        webCamara.stopLoading();
-
-        webCamara.destroy();
-
+        handler.removeCallbacksAndMessages(null);
+        if (webCamara != null) {
+            webCamara.stopLoading();
+            webCamara.destroy();
+        }
         super.onDestroy();
-
     }
-
 }

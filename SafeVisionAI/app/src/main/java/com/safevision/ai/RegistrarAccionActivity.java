@@ -57,6 +57,10 @@ public class RegistrarAccionActivity extends BaseActivity {
     private boolean estadoCasco = true;
     private boolean estadoChaleco = true;
 
+    // Implementos que faltan en la alerta
+    private boolean faltaCasco = false;
+    private boolean faltaChaleco = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,9 +95,8 @@ public class RegistrarAccionActivity extends BaseActivity {
         boolean alertCasco = getIntent().getBooleanExtra("casco", true);
         boolean alertChaleco = getIntent().getBooleanExtra("chaleco", true);
         String problemaAlerta = getIntent().getStringExtra("problema");
-        String implementoAlerta = determinarImplemento(problemaAlerta, alertCasco, alertChaleco);
-        TextView txtImplemento = findViewById(R.id.txtImplemento);
-        txtImplemento.setText(implementoAlerta);
+
+        evaluarImplementos(problemaAlerta, alertCasco, alertChaleco);
         // =====================================================
 
         txtArea.setText("Producción");
@@ -136,7 +139,7 @@ public class RegistrarAccionActivity extends BaseActivity {
         }
     }
 
-    private String determinarImplemento(
+    private void evaluarImplementos(
             String problema,
             boolean alertCasco,
             boolean alertChaleco) {
@@ -145,15 +148,26 @@ public class RegistrarAccionActivity extends BaseActivity {
                 ? problema.toLowerCase()
                 : "";
 
-        if (prob.contains("casco") || !alertCasco) {
-            return "Casco";
+        // Si alertCasco es false, falta casco. O si el texto de problema menciona "casco"
+        faltaCasco = !alertCasco || prob.contains("casco");
+        // Si alertChaleco es false, falta chaleco. O si el texto de problema menciona "chaleco"
+        faltaChaleco = !alertChaleco || prob.contains("chaleco");
+
+        // Fallback seguro si no vino especificado
+        if (!faltaCasco && !faltaChaleco) {
+            faltaCasco = true;
         }
 
-        if (prob.contains("chaleco") || !alertChaleco) {
-            return "Chaleco";
+        TextView txtImplemento = findViewById(R.id.txtImplemento);
+        if (txtImplemento != null) {
+            if (faltaCasco && faltaChaleco) {
+                txtImplemento.setText("• CASCO\n• CHALECO");
+            } else if (faltaChaleco) {
+                txtImplemento.setText("• CHALECO");
+            } else {
+                txtImplemento.setText("• CASCO");
+            }
         }
-
-        return "Casco";
     }
 
     // =========================================================
@@ -323,16 +337,23 @@ public class RegistrarAccionActivity extends BaseActivity {
         }
 
         TextView txtImplemento = findViewById(R.id.txtImplemento);
-        final String implemento = txtImplemento.getText().toString().trim();
+        final String implemento = txtImplemento != null ? txtImplemento.getText().toString().trim() : "";
         final String observacion = edtObservacion.getText().toString().trim();
-        final String accionTexto = "Retiro de " + implemento.toLowerCase();
+        final String accionTexto;
+        if (faltaCasco && faltaChaleco) {
+            accionTexto = "Retiro de casco y chaleco";
+        } else if (faltaChaleco) {
+            accionTexto = "Retiro de chaleco";
+        } else {
+            accionTexto = "Retiro de casco";
+        }
 
         // 1. Deshabilitar botón Aplicar para evitar doble clic
         btnAplicar.setEnabled(false);
         txtEstadoDni.setText("Procesando registro...");
 
         Log.d(TAG, "iniciando guardado");
-        Log.d(TAG, "ID alerta: " + alertaId + ", EPP: " + implemento + ", estado RETIRADO");
+        Log.d(TAG, "ID alerta: " + alertaId + ", EPP faltaCasco: " + faltaCasco + ", faltaChaleco: " + faltaChaleco + ", estado RETIRADO");
 
         // 2. Consultar Supabase por DNI para determinar si existe o se debe crear
         api.buscarTrabajadorPorDni(getAuthorization(), "*", "eq." + dni).enqueue(
@@ -413,16 +434,11 @@ public class RegistrarAccionActivity extends BaseActivity {
         nuevoTrabajador.put("area", area);
 
         // Estado inicial de EPP: el EPP retirado se marca en false y su contador en 1
-        boolean initCasco = !"Casco".equalsIgnoreCase(implemento);
-        boolean initChaleco = !"Chaleco".equalsIgnoreCase(implemento);
-        int initCascoRetiros = "Casco".equalsIgnoreCase(implemento) ? 1 : 0;
-        int initChalecoRetiros = "Chaleco".equalsIgnoreCase(implemento) ? 1 : 0;
-
-        nuevoTrabajador.put("casco", initCasco);
-        nuevoTrabajador.put("chaleco", initChaleco);
-        nuevoTrabajador.put("casco_retiros", initCascoRetiros);
+        nuevoTrabajador.put("casco", !faltaCasco);
+        nuevoTrabajador.put("chaleco", !faltaChaleco);
+        nuevoTrabajador.put("casco_retiros", faltaCasco ? 1 : 0);
         nuevoTrabajador.put("casco_colocaciones", 0);
-        nuevoTrabajador.put("chaleco_retiros", initChalecoRetiros);
+        nuevoTrabajador.put("chaleco_retiros", faltaChaleco ? 1 : 0);
         nuevoTrabajador.put("chaleco_colocaciones", 0);
 
         api.registrarTrabajador(getAuthorization(), nuevoTrabajador).enqueue(
@@ -464,21 +480,20 @@ public class RegistrarAccionActivity extends BaseActivity {
             final String accionTexto,
             final String observacion
     ) {
-        // Preparar actualización de contadores si es Casco o Chaleco
-        Map<String, Object> datosContador = null;
-        if ("Casco".equalsIgnoreCase(implemento)) {
+        // Preparar actualización de contadores según implementos que faltan
+        Map<String, Object> datosContador = new HashMap<>();
+        if (faltaCasco) {
             int cr = obtenerNumero(trab.get("casco_retiros")) + 1;
-            datosContador = new HashMap<>();
             datosContador.put("casco_retiros", cr);
             datosContador.put("casco", false);
-        } else if ("Chaleco".equalsIgnoreCase(implemento)) {
+        }
+        if (faltaChaleco) {
             int chr = obtenerNumero(trab.get("chaleco_retiros")) + 1;
-            datosContador = new HashMap<>();
             datosContador.put("chaleco_retiros", chr);
             datosContador.put("chaleco", false);
         }
 
-        insertarAccionYActualizarAlerta(idTrabajador, accionTexto, observacion, datosContador);
+        insertarAccionYActualizarAlerta(idTrabajador, accionTexto, observacion, datosContador.isEmpty() ? null : datosContador);
     }
 
     // =========================================================

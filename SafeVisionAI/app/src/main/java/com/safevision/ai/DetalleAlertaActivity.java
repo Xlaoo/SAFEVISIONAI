@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -25,6 +26,9 @@ public class DetalleAlertaActivity extends BaseActivity {
 
     private ImageView imgFotoNormal;
     private ImageView imgFotoZoom;
+    private ImageView imgFotoZoomChaleco;
+    private View layoutZoomCasco;
+    private View layoutZoomChaleco;
 
     private final ExecutorService executor =
             Executors.newSingleThreadExecutor();
@@ -79,6 +83,21 @@ public class DetalleAlertaActivity extends BaseActivity {
                         R.id.imgFotoZoom
                 );
 
+        imgFotoZoomChaleco =
+                findViewById(
+                        R.id.imgFotoZoomChaleco
+                );
+
+        layoutZoomCasco =
+                findViewById(
+                        R.id.layoutZoomCascoAlerta
+                );
+
+        layoutZoomChaleco =
+                findViewById(
+                        R.id.layoutZoomChalecoAlerta
+                );
+
 
         // =====================================================
         // RECIBIR DATOS DE LA ALERTA
@@ -129,14 +148,14 @@ public class DetalleAlertaActivity extends BaseActivity {
         boolean casco =
                 datos.getBooleanExtra(
                         "casco",
-                        false
+                        true
                 );
 
 
         boolean chaleco =
                 datos.getBooleanExtra(
                         "chaleco",
-                        false
+                        true
                 );
 
 
@@ -199,7 +218,15 @@ public class DetalleAlertaActivity extends BaseActivity {
 
 
         // =====================================================
-        // CARGAR FOTO NORMAL
+        // EVALUAR IMPLEMENTOS FALTANTES
+        // =====================================================
+        String prob = problema != null ? problema.toLowerCase() : "";
+        boolean preliminarFaltaCasco = !casco || prob.contains("casco");
+        final boolean finalFaltaChaleco = !chaleco || prob.contains("chaleco");
+        final boolean finalFaltaCasco = (!preliminarFaltaCasco && !finalFaltaChaleco) ? true : preliminarFaltaCasco;
+
+        // =====================================================
+        // CARGAR FOTO GENERAL (SIEMPRE VISIBLE)
         // =====================================================
 
         if (esUrlValida(fotoNormal)) {
@@ -218,21 +245,41 @@ public class DetalleAlertaActivity extends BaseActivity {
 
 
         // =====================================================
-        // CARGAR FOTO ZOOM
+        // CARGAR FOTOS ZOOM SEGÚN IMPLEMENTOS (2 o 3 FOTOS)
         // =====================================================
 
-        if (esUrlValida(fotoZoom)) {
+        if (finalFaltaCasco && finalFaltaChaleco) {
+            // CASO A: CASCO + CHALECO = 3 FOTOGRAFÍAS (General + Zoom Casco + Zoom Chaleco)
+            layoutZoomCasco.setVisibility(View.VISIBLE);
+            layoutZoomChaleco.setVisibility(View.VISIBLE);
 
-            cargarImagen(
-                    fotoZoom,
-                    imgFotoZoom
-            );
+            if (esUrlValida(fotoZoom)) {
+                cargarImagen(fotoZoom, imgFotoZoom);
+                cargarImagen(fotoZoom, imgFotoZoomChaleco);
+            } else {
+                imgFotoZoom.setImageResource(android.R.drawable.ic_menu_report_image);
+                imgFotoZoomChaleco.setImageResource(android.R.drawable.ic_menu_report_image);
+            }
+        } else if (finalFaltaCasco) {
+            // CASO B: SOLO CASCO = 2 FOTOGRAFÍAS (General + Zoom Casco)
+            layoutZoomCasco.setVisibility(View.VISIBLE);
+            layoutZoomChaleco.setVisibility(View.GONE);
 
+            if (esUrlValida(fotoZoom)) {
+                cargarImagen(fotoZoom, imgFotoZoom);
+            } else {
+                imgFotoZoom.setImageResource(android.R.drawable.ic_menu_report_image);
+            }
         } else {
+            // CASO C: SOLO CHALECO = 2 FOTOGRAFÍAS (General + Zoom Chaleco)
+            layoutZoomCasco.setVisibility(View.GONE);
+            layoutZoomChaleco.setVisibility(View.VISIBLE);
 
-            imgFotoZoom.setImageResource(
-                    android.R.drawable.ic_menu_report_image
-            );
+            if (esUrlValida(fotoZoom)) {
+                cargarImagen(fotoZoom, imgFotoZoomChaleco);
+            } else {
+                imgFotoZoomChaleco.setImageResource(android.R.drawable.ic_menu_report_image);
+            }
         }
 
 
@@ -285,13 +332,13 @@ public class DetalleAlertaActivity extends BaseActivity {
 
                     intent.putExtra(
                             "casco",
-                            casco
+                            !finalFaltaCasco
                     );
 
 
                     intent.putExtra(
                             "chaleco",
-                            chaleco
+                            !finalFaltaChaleco
                     );
 
 
@@ -313,94 +360,72 @@ public class DetalleAlertaActivity extends BaseActivity {
     ) {
 
         executor.execute(() -> {
+            Bitmap bitmap = descargarBitmap(urlImagen);
 
-            HttpURLConnection conexion = null;
+            if (bitmap == null && urlImagen != null && urlImagen.contains("/fotos/")) {
+                String storageUrl = resolverUrlSupabaseStorage(urlImagen);
+                if (storageUrl != null && !storageUrl.equals(urlImagen)) {
+                    bitmap = descargarBitmap(storageUrl);
+                }
+            }
 
-            try {
-
-                URL url =
-                        new URL(
-                                urlImagen
-                        );
-
-
-                conexion =
-                        (HttpURLConnection)
-                                url.openConnection();
-
-
-                conexion.setConnectTimeout(
-                        10000
-                );
-
-
-                conexion.setReadTimeout(
-                        10000
-                );
-
-
-                conexion.setDoInput(
-                        true
-                );
-
-
-                conexion.connect();
-
-
-                InputStream input =
-                        conexion.getInputStream();
-
-
-                Bitmap bitmap =
-                        BitmapFactory.decodeStream(
-                                input
-                        );
-
-
-                input.close();
-
-
-                runOnUiThread(() -> {
-
-                    if (bitmap != null) {
-
-                        imageView.setImageBitmap(
-                                bitmap
-                        );
-
-                    } else {
-
-                        imageView.setImageResource(
-                                android.R.drawable.ic_menu_report_image
-                        );
-                    }
-
-                });
-
-
-            } catch (Exception e) {
-
-                runOnUiThread(() -> {
-
+            final Bitmap res = bitmap;
+            runOnUiThread(() -> {
+                if (res != null) {
+                    imageView.setImageBitmap(res);
+                } else {
                     imageView.setImageResource(
                             android.R.drawable.ic_menu_report_image
                     );
-
-                });
-
-
-            } finally {
-
-                if (conexion != null) {
-
-                    conexion.disconnect();
-
                 }
-
-            }
-
+            });
         });
+    }
 
+    private Bitmap descargarBitmap(String urlStr) {
+        if (urlStr == null || urlStr.trim().isEmpty()) return null;
+        HttpURLConnection conexion = null;
+        InputStream input = null;
+        try {
+            URL url = new URL(urlStr);
+            conexion = (HttpURLConnection) url.openConnection();
+            conexion.setConnectTimeout(8000);
+            conexion.setReadTimeout(8000);
+            conexion.setDoInput(true);
+            conexion.connect();
+
+            if (conexion.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                input = conexion.getInputStream();
+                return BitmapFactory.decodeStream(input);
+            }
+            return null;
+        } catch (Exception e) {
+            return null;
+        } finally {
+            if (input != null) {
+                try {
+                    input.close();
+                } catch (Exception ignored) {}
+            }
+            if (conexion != null) {
+                conexion.disconnect();
+            }
+        }
+    }
+
+    private String resolverUrlSupabaseStorage(String urlOriginal) {
+        if (urlOriginal == null || !urlOriginal.contains("/fotos/")) return null;
+        try {
+            int idx = urlOriginal.indexOf("/fotos/");
+            String nombreArchivo = urlOriginal.substring(idx + 7);
+            String urlBase = SupabaseConfig.URL;
+            if (!urlBase.endsWith("/")) {
+                urlBase += "/";
+            }
+            return urlBase + "storage/v1/object/public/fotos-alertas/" + nombreArchivo;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private boolean esUrlValida(String url) {

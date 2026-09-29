@@ -39,7 +39,7 @@ public class AlertaNotificationService extends Service {
      * Si cambia la IP, cambia esta dirección.
      */
     private static final String URL_ALERTA =
-            "http://10.237.144.107:5000/alerta";
+            CameraConfig.getUrlAlerta();
 
 
     /*

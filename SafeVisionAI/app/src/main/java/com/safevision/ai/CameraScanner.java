@@ -18,9 +18,8 @@ public class CameraScanner {
 
         new Thread(() -> {
 
-            // IP ACTUAL DE LA LAPTOP
-            String url =
-                    "http://10.237.144.107:5000/";
+            // URL del servidor de cámara configurada en CameraConfig
+            String url = CameraConfig.getUrlBase();
 
             try {
 

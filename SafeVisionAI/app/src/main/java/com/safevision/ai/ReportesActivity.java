@@ -356,6 +356,9 @@ public class ReportesActivity extends BaseActivity {
                     if (rep == null) {
                         Map<String, Object> datosTrabajador = mapaTrabajadoresPorId.get(trabajadorId);
                         String dni = datosTrabajador != null ? obtenerTexto(datosTrabajador.get("dni")) : "";
+                        if ("12345678".equals(dni.trim())) {
+                            dni = "";
+                        }
                         String nombres = datosTrabajador != null ? obtenerTexto(datosTrabajador.get("nombres")) : "";
                         String apellidos = datosTrabajador != null ? obtenerTexto(datosTrabajador.get("apellidos")) : "";
                         String area = datosTrabajador != null ? obtenerTexto(datosTrabajador.get("area")) : "Producción";

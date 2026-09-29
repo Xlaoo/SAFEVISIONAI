@@ -96,23 +96,61 @@
 
 
 
-    <!-- ESTADO -->
-
+    <!-- ESTADO PERSONA (RETROCOMPATIBILIDAD) -->
     <TextView
-
         android:id="@+id/txtEstadoPersona"
-
         android:layout_width="match_parent"
-
-        android:layout_height="40dp"
-
+        android:layout_height="30dp"
         android:gravity="center"
-
-        android:text="🟢 Persona detectada"
-
+        android:text="🟢 En línea"
         android:textStyle="bold"
-
+        android:textSize="14sp"
         android:textColor="#00A85A"/>
+
+    <!-- PANEL DE ESTADO EPP (CASCO + CHALECO) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginTop="10dp"
+        android:padding="16dp"
+        android:background="#F5F7FA"
+        android:gravity="center">
+
+        <!-- ESTADO GENERAL EPP -->
+        <TextView
+            android:id="@+id/txtEstadoEpp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ESTADO: BUSCANDO PERSONA"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#FF9800"/>
+
+        <!-- ESTADO CASCO -->
+        <TextView
+            android:id="@+id/txtEstadoCasco"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="CASCO: --"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#333333"/>
+
+        <!-- ESTADO CHALECO -->
+        <TextView
+            android:id="@+id/txtEstadoChaleco"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="CHALECO: --"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#333333"/>
+
+    </LinearLayout>
 
 
 

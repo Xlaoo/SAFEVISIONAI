@@ -140,7 +140,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="22dp"
-            android:text="Implemento"
+            android:text="Implemento(s)"
             android:textColor="#073A62"
             android:textSize="15sp"
             android:textStyle="bold"/>
@@ -149,10 +149,13 @@
             android:id="@+id/txtImplemento"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Casco"
+            android:layout_marginTop="6dp"
+            android:background="#F1F4F7"
+            android:padding="12dp"
+            android:text="CASCO"
+            android:textColor="#0F172A"
             android:textSize="16sp"
-            android:textStyle="bold"
-            android:padding="12dp" />
+            android:textStyle="bold" />
 
 
         <!-- OBSERVACION -->

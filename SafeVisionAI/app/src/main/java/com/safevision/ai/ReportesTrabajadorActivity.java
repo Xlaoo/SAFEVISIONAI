@@ -117,16 +117,36 @@ public class ReportesTrabajadorActivity extends BaseActivity {
             area = obtenerTextoSeguro(intent.getStringExtra("area"));
             if (area.isEmpty()) area = "Producción";
             fotoUrl = obtenerTextoSeguro(intent.getStringExtra("foto"));
+            if ("12345678".equals(dni)) {
+                dni = "";
+            }
         }
 
         actualizarCabeceraTrabajador();
     }
 
-    private void actualizarCabeceraTrabajador() {
-        String nombreCompleto = (nombres + " " + apellidos).trim();
-        if (nombreCompleto.isEmpty()) {
-            nombreCompleto = "Trabajador #" + trabajadorId;
+    private String formatearNombreTrabajador(String nom, String ape, int id) {
+        String n = nom != null ? nom.trim() : "";
+        String a = ape != null ? ape.trim() : "";
+
+        if (a.toLowerCase().contains("12345678") || a.equalsIgnoreCase("DNI") || a.startsWith("DNI ")) {
+            a = "";
         }
+
+        if (n.equalsIgnoreCase("Trabajador") && a.isEmpty()) {
+            return "Trabajador";
+        }
+        if (n.isEmpty() && a.isEmpty()) {
+            return "Trabajador";
+        }
+        if (n.isEmpty()) return a;
+        if (a.isEmpty()) return n;
+
+        return (n + " " + a).trim();
+    }
+
+    private void actualizarCabeceraTrabajador() {
+        String nombreCompleto = formatearNombreTrabajador(nombres, apellidos, trabajadorId);
 
         txtTitulo.setText("Reportes de " + nombreCompleto);
         txtNombreTrabajador.setText(nombreCompleto);
@@ -256,8 +276,7 @@ public class ReportesTrabajadorActivity extends BaseActivity {
         listaReportes.clear();
         int vecesReportadoRevisados = 0;
 
-        String nombreCompleto = (nombres + " " + apellidos).trim();
-        if (nombreCompleto.isEmpty()) nombreCompleto = "Trabajador #" + trabajadorId;
+        String nombreCompleto = formatearNombreTrabajador(nombres, apellidos, trabajadorId);
 
         for (Map<String, Object> alerta : alertas) {
             int alertaId = obtenerEntero(alerta.get("id"));
@@ -276,9 +295,19 @@ public class ReportesTrabajadorActivity extends BaseActivity {
             String problema = obtenerTextoSeguro(alerta.get("problema"));
             if (problema.isEmpty()) problema = "Infracción EPP detectada";
 
-            String imagen = obtenerTextoSeguro(alerta.get("imagen"));
-            String imagenNormal = obtenerTextoSeguro(alerta.get("imagen_normal"));
-            String imagenZoom = obtenerTextoSeguro(alerta.get("imagen_zoom"));
+            boolean cascoAlerta = Boolean.TRUE.equals(alerta.get("casco"));
+            boolean chalecoAlerta = Boolean.TRUE.equals(alerta.get("chaleco"));
+
+            String imagen = limpiarUrl(obtenerTextoSeguro(alerta.get("imagen")));
+            String imagenNormal = limpiarUrl(obtenerTextoSeguro(alerta.get("imagen_normal")));
+            String imagenZoom = limpiarUrl(obtenerTextoSeguro(alerta.get("imagen_zoom")));
+
+            if (imagenNormal.isEmpty() && !imagen.isEmpty()) {
+                imagenNormal = imagen;
+            }
+            if (imagen.isEmpty() && !imagenNormal.isEmpty()) {
+                imagen = imagenNormal;
+            }
 
             String estadoTexto = esRevisado ? "Revisado" : "Pendiente";
 
@@ -323,7 +352,9 @@ public class ReportesTrabajadorActivity extends BaseActivity {
                     revisadoPor,
                     fechaRevision,
                     observaciones,
-                    0
+                    0,
+                    cascoAlerta,
+                    chalecoAlerta
             );
 
             listaReportes.add(item);
@@ -416,5 +447,14 @@ public class ReportesTrabajadorActivity extends BaseActivity {
 
     private String obtenerTextoSeguro(Object obj) {
         return obj != null ? obj.toString().trim() : "";
+    }
+
+    private String limpiarUrl(String url) {
+        if (url == null) return "";
+        String trimmed = url.trim();
+        if (trimmed.equalsIgnoreCase("null") || trimmed.equalsIgnoreCase("empty")) {
+            return "";
+        }
+        return trimmed;
     }
 }

@@ -78,7 +78,18 @@
                         android:textSize="14sp"
                         android:textStyle="bold" />
 
+                    <!-- FOTO GENERAL (SIEMPRE PRESENTE) -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="6dp"
+                        android:text="📸 Foto general"
+                        android:textColor="#334155"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
                     <FrameLayout
+                        android:id="@+id/layoutFotoGeneralReporte"
                         android:layout_width="match_parent"
                         android:layout_height="220dp"
                         android:background="#0F172A">
@@ -88,7 +99,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:scaleType="fitCenter"
-                            android:contentDescription="Evidencia real de la alerta" />
+                            android:contentDescription="Foto general de la infracción" />
 
                         <ProgressBar
                             android:id="@+id/progressBarFotoReporte"
@@ -108,6 +119,106 @@
                             android:visibility="gone" />
 
                     </FrameLayout>
+
+                    <!-- FOTO ZOOM CASCO -->
+                    <LinearLayout
+                        android:id="@+id/layoutZoomCascoReporte"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="6dp"
+                            android:text="🔍 Foto zoom casco"
+                            android:textColor="#334155"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+
+                        <FrameLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="220dp"
+                            android:background="#0F172A">
+
+                            <ImageView
+                                android:id="@+id/imgZoomCascoReporte"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:scaleType="fitCenter"
+                                android:contentDescription="Foto zoom casco" />
+
+                            <ProgressBar
+                                android:id="@+id/progressBarZoomCasco"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:visibility="gone" />
+
+                            <TextView
+                                android:id="@+id/txtSinZoomCasco"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:text="No hay zoom de casco disponible"
+                                android:textColor="#94A3B8"
+                                android:textSize="13sp"
+                                android:visibility="gone" />
+
+                        </FrameLayout>
+
+                    </LinearLayout>
+
+                    <!-- FOTO ZOOM CHALECO -->
+                    <LinearLayout
+                        android:id="@+id/layoutZoomChalecoReporte"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="6dp"
+                            android:text="🔍 Foto zoom chaleco"
+                            android:textColor="#334155"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+
+                        <FrameLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="220dp"
+                            android:background="#0F172A">
+
+                            <ImageView
+                                android:id="@+id/imgZoomChalecoReporte"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:scaleType="fitCenter"
+                                android:contentDescription="Foto zoom chaleco" />
+
+                            <ProgressBar
+                                android:id="@+id/progressBarZoomChaleco"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:visibility="gone" />
+
+                            <TextView
+                                android:id="@+id/txtSinZoomChaleco"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:text="No hay zoom de chaleco disponible"
+                                android:textColor="#94A3B8"
+                                android:textSize="13sp"
+                                android:visibility="gone" />
+
+                        </FrameLayout>
+
+                    </LinearLayout>
 
                 </LinearLayout>
 
@@ -167,7 +278,7 @@
 
                     </LinearLayout>
 
-                    <!-- FECHA -->
+                    <!-- FECHA Y HORA -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -177,12 +288,12 @@
                         <TextView
                             android:layout_width="140dp"
                             android:layout_height="wrap_content"
-                            android:text="Fecha:"
+                            android:text="Fecha y hora:"
                             android:textColor="#64748B"
                             android:textSize="13sp" />
 
                         <TextView
-                            android:id="@+id/txtDetalleFecha"
+                            android:id="@+id/txtDetalleFechaHora"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
@@ -192,30 +303,18 @@
 
                     </LinearLayout>
 
-                    <!-- HORA -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="8dp"
-                        android:orientation="horizontal">
+                    <!-- Vistas ocultas por compatibilidad de IDs -->
+                    <TextView
+                        android:id="@+id/txtDetalleFecha"
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:visibility="gone" />
 
-                        <TextView
-                            android:layout_width="140dp"
-                            android:layout_height="wrap_content"
-                            android:text="Hora:"
-                            android:textColor="#64748B"
-                            android:textSize="13sp" />
-
-                        <TextView
-                            android:id="@+id/txtDetalleHora"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="—"
-                            android:textColor="#0F172A"
-                            android:textSize="13sp" />
-
-                    </LinearLayout>
+                    <TextView
+                        android:id="@+id/txtDetalleHora"
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:visibility="gone" />
 
                     <!-- ÁREA -->
                     <LinearLayout

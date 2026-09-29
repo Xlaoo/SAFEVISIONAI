@@ -444,13 +444,11 @@ public class InicioActivity extends BaseActivity {
                                     for (Map<String, Object> trabajador
                                             : trabajadores) {
 
-
                                         String nombres =
                                                 obtenerTexto(
                                                         trabajador,
                                                         "nombres"
                                                 );
-
 
                                         String apellidos =
                                                 obtenerTexto(
@@ -458,13 +456,11 @@ public class InicioActivity extends BaseActivity {
                                                         "apellidos"
                                                 );
 
-
                                         String area =
                                                 obtenerTexto(
                                                         trabajador,
                                                         "area"
                                                 );
-
 
                                         String cargo =
                                                 obtenerTexto(
@@ -472,53 +468,68 @@ public class InicioActivity extends BaseActivity {
                                                         "cargo"
                                                 );
 
+                                        // Limpiar DNI genérico o de prueba en apellidos, nombres y cargo
+                                        if (apellidos.toLowerCase().contains("12345678") || apellidos.equalsIgnoreCase("DNI")
+                                                || apellidos.toLowerCase().startsWith("dni ") || apellidos.toLowerCase().startsWith("dni:")) {
+                                            apellidos = apellidos.replaceAll("(?i)dni\\s*12345678", "")
+                                                    .replaceAll("(?i)dni:?", "")
+                                                    .replaceAll("12345678", "")
+                                                    .trim();
+                                        }
+
+                                        if (nombres.toLowerCase().contains("12345678")) {
+                                            nombres = nombres.replaceAll("(?i)dni\\s*12345678", "")
+                                                    .replaceAll("(?i)dni:?", "")
+                                                    .replaceAll("12345678", "")
+                                                    .trim();
+                                        }
+
+                                        if (cargo.toLowerCase().contains("12345678") || cargo.equalsIgnoreCase("DNI")
+                                                || cargo.toLowerCase().startsWith("dni ") || cargo.toLowerCase().startsWith("dni:")) {
+                                            cargo = cargo.replaceAll("(?i)dni\\s*12345678", "")
+                                                    .replaceAll("(?i)dni:?", "")
+                                                    .replaceAll("12345678", "")
+                                                    .trim();
+                                        }
+
+                                        String nombreCompleto = (nombres + " " + apellidos).trim();
+                                        if (nombreCompleto.isEmpty()) {
+                                            nombreCompleto = "Trabajador";
+                                        }
+
+                                        if (area.isEmpty()) {
+                                            area = "Producción";
+                                        }
 
                                         lista.append(
                                                 "• "
                                         );
 
-
                                         lista.append(
-                                                nombres
+                                                nombreCompleto
                                         );
-
-
-                                        lista.append(
-                                                " "
-                                        );
-
-
-                                        lista.append(
-                                                apellidos
-                                        );
-
 
                                         lista.append(
                                                 "\n"
                                         );
 
-
                                         lista.append(
                                                 "   "
                                         );
-
 
                                         if (!cargo.isEmpty()) {
                                             lista.append(
                                                     cargo
                                             );
 
-
                                             lista.append(
                                                     "  •  "
                                             );
                                         }
 
-
                                         lista.append(
                                                 area
                                         );
-
 
                                         lista.append(
                                                 "\n\n"
