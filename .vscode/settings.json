@@ -1,0 +1,8 @@
+{
+    "java.project.sourcePaths": [
+        "SafeVisionAI/app/src/main/java"
+    ],
+    "java.errors.incompleteClasspath.severity": "ignore",
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.import.gradle.enabled": true
+}
