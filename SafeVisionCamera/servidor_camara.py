@@ -585,202 +585,246 @@ def iniciar_camara():
     cv2.namedWindow(nombre_ventana, cv2.WINDOW_NORMAL)
     cv2.resizeWindow(nombre_ventana, 800, 600)
 
-    t0 = time.time()
-
-    while activo:
-        if camara is None or not camara.isOpened():
-            print("⚠️ Cámara no disponible. Intentando reconectar...")
-            camara = abrir_camara()
-            if camara is None:
-                time.sleep(2)
-                continue
-            t0 = time.time()
-
-        ok, frame = camara.read()
-        if not ok or frame is None:
-            print("⚠️ No se pudo leer frame de la cámara.")
-            try:
-                camara.release()
-            except Exception:
-                pass
-            camara = None
-            time.sleep(0.5)
-            continue
-
-        # Efecto espejo
-        frame = cv2.flip(frame, 1)
-
-        # Control de timestamps para MediaPipe
-        timestamp_ms = int((time.time() - t0) * 1000)
-        if timestamp_ms <= ultimo_timestamp_ms:
-            timestamp_ms = ultimo_timestamp_ms + 1
-        ultimo_timestamp_ms = timestamp_ms
-
-        # Procesamiento coordinado de EPP (Casco + Chaleco)
-        try:
-            res_epp = procesar_frame_epp(
-                frame,
-                detector,
-                timestamp_ms,
-                dibujar_hud=True,
-            )
-        except Exception as e:
-            print("⚠️ Error en procesamiento EPP:", e)
-            time.sleep(0.05)
-            continue
-
-        # --------------------------------------------------
-        # ACTUALIZACIÓN DE ESTADO COMPARTIDO (CON LOCK)
-        # --------------------------------------------------
-        with bloqueo:
-            estado_epp_actual = {
-                "casco": res_epp["casco"],
-                "chaleco": res_epp["chaleco"],
-                "epp_completo": res_epp["epp_completo"],
-                "estado": res_epp["estado"],
-                "porcentaje_casco": res_epp["porcentaje_casco"],
-                "porcentaje_chaleco": res_epp["porcentaje_chaleco"],
-                "rostro_detectado": res_epp["rostro_detectado"],
-            }
-            estado_casco = "CASCO OK" if res_epp["casco"] else ("NO HAY CASCO" if res_epp["rostro_detectado"] else "SIN DETECTAR")
-            porcentaje_casco = res_epp["porcentaje_casco"]
-            frame_actual = res_epp["frame_anotado"].copy()
-
-        # --------------------------------------------------
-        # GESTIÓN DE ALERTAS (EPP: Casco + Chaleco)
-        # --------------------------------------------------
-        rostro_detectado = res_epp["rostro_detectado"]
-        casco_ok = res_epp["casco"]
-        chaleco_ok = res_epp["chaleco"]
-        epp_completo = res_epp["epp_completo"]
-        zona_casco = res_epp.get("zona_casco")
-        zona_chaleco = res_epp.get("zona_chaleco")
-
-        if not rostro_detectado:
-            frames_falta_actual = 0
-            condicion_falta_actual = None
-            if alerta_activa:
-                print("👤 Persona salió de la cámara. Alerta rearmada.")
-                alerta_activa = False
-                tipo_falta_alerta_activa = None
-
-        elif epp_completo:
-            frames_falta_actual = 0
-            condicion_falta_actual = None
-            if alerta_activa:
-                print("🟢 EPP completo colocado nuevamente. Registrando colocación y rearmando sistema...")
-                trabajador_actual = buscar_trabajador_por_dni(DNI_TRABAJADOR_ACTUAL)
-                if trabajador_actual:
-                    if tipo_falta_alerta_activa in ("FALTA_CASCO", "FALTA_AMBOS"):
-                        acumular_deteccion_colocacion_casco(trabajador_actual)
-                    if tipo_falta_alerta_activa in ("FALTA_CHALECO", "FALTA_AMBOS"):
-                        acumular_deteccion_colocacion_chaleco(trabajador_actual)
-                alerta_activa = False
-                tipo_falta_alerta_activa = None
-
-        else:
-            # Rostro presente pero falta al menos un elemento de EPP
-            if not casco_ok and not chaleco_ok:
-                condicion_ahora = "FALTA_AMBOS"
-                problema_texto = "Faltan casco y chaleco de seguridad"
-                tipo_falta_code = "EPP_INCOMPLETO"
-            elif not casco_ok:
-                condicion_ahora = "FALTA_CASCO"
-                problema_texto = "Trabajador sin casco de seguridad"
-                tipo_falta_code = "CASCO_RETIRADO"
-            else:
-                condicion_ahora = "FALTA_CHALECO"
-                problema_texto = "Trabajador sin chaleco reflectante"
-                tipo_falta_code = "CHALECO_RETIRADO"
-
-            # Determinar zona zoom según la falta
-            if condicion_ahora == "FALTA_AMBOS":
-                if zona_casco is not None and zona_chaleco is not None:
-                    zona_zoom_candidata = (
-                        min(zona_casco[0], zona_chaleco[0]),
-                        min(zona_casco[1], zona_chaleco[1]),
-                        max(zona_casco[2], zona_chaleco[2]),
-                        max(zona_casco[3], zona_chaleco[3]),
-                    )
-                else:
-                    zona_zoom_candidata = zona_casco if zona_casco is not None else zona_chaleco
-            elif condicion_ahora == "FALTA_CASCO":
-                zona_zoom_candidata = zona_casco
-            else:
-                zona_zoom_candidata = zona_chaleco
-
-            # Antiduplicación: si la misma condición ya generó alerta activa, no volver a disparar
-            if alerta_activa and tipo_falta_alerta_activa == condicion_ahora:
-                frames_falta_actual = 0
-            else:
-                if condicion_ahora == condicion_falta_actual and zona_zoom_candidata is not None:
-                    frames_falta_actual += 1
-                else:
-                    condicion_falta_actual = condicion_ahora
-                    frames_falta_actual = 1 if zona_zoom_candidata is not None else 0
-
-                # Indicador de confirmación sobre la ventana
-                h_f = res_epp["frame_anotado"].shape[0]
-                cv2.putText(
-                    res_epp["frame_anotado"],
-                    f"Confirmando {condicion_ahora} {frames_falta_actual}/{FRAMES_CONFIRMACION_RETIRO}",
-                    (20, h_f - 20),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.65,
-                    (0, 0, 255),
-                    2,
-                )
-
-                if (
-                    frames_falta_actual >= FRAMES_CONFIRMACION_RETIRO
-                    and rostro_detectado
-                    and zona_zoom_candidata is not None
-                ):
-                    print(f"🚨 Falta de EPP confirmada ({condicion_ahora}). Generando alerta...")
-                    nueva_alerta = crear_fotos_alerta(
-                        res_epp["frame_anotado"],
-                        zona_zoom_candidata,
-                        tipo_falta=tipo_falta_code,
-                        casco_bool=casco_ok,
-                        chaleco_bool=chaleco_ok,
-                        problema_texto=problema_texto,
-                    )
-                    if nueva_alerta is not None:
-                        with bloqueo:
-                            ultima_alerta = nueva_alerta
-                        alerta_activa = True
-                        tipo_falta_alerta_activa = condicion_ahora
-                        frames_falta_actual = 0
-
-        # Mostrar en ventana única de 800x600
-        cv2.imshow(nombre_ventana, res_epp["frame_anotado"])
-
-        tecla = cv2.waitKey(1) & 0xFF
-        if tecla == ord("q"):
-            activo = False
-            break
-
-    # Cierre de cámara y ventana al salir
+    # 1. Asegurar e inicializar detector MediaPipe DENTRO del hilo de cámara
+    asegurar_modelo()
     try:
-        if camara is not None:
-            camara.release()
-    except Exception:
-        pass
-    cv2.destroyAllWindows()
+        detector = crear_detector_epp()
+    except Exception as e:
+        print("❌ Error fatal al inicializar MediaPipe FaceDetector:", e)
+        activo = False
+        return
 
+    # 2. Inicializar cámara
+    camara = abrir_camara()
 
-# ==========================================================
-# INICIALIZACIÓN DEL MODELO Y HILO DE CÁMARA
-# ==========================================================
+    t0 = time.time()
+    reintentos_recuperacion = 0
+    consecutivos_exito = 0
+    ultimo_error_impreso = None
+    tiempo_ultimo_error = 0.0
 
-asegurar_modelo()
-detector = crear_detector_epp()
-camara = abrir_camara()
+    try:
+        while activo:
+            if camara is None or not camara.isOpened():
+                print("⚠️ Cámara no disponible. Intentando reconectar...")
+                camara = abrir_camara()
+                if camara is None:
+                    time.sleep(2)
+                    continue
+                t0 = time.time()
 
-threading.Thread(
-    target=iniciar_camara,
-    daemon=True,
-).start()
+            ok, frame = camara.read()
+            if not ok or frame is None:
+                print("⚠️ No se pudo leer frame de la cámara.")
+                try:
+                    camara.release()
+                except Exception:
+                    pass
+                camara = None
+                time.sleep(0.5)
+                continue
+
+            # Efecto espejo
+            frame = cv2.flip(frame, 1)
+
+            # Control de timestamps para MediaPipe
+            timestamp_ms = int((time.time() - t0) * 1000)
+            if timestamp_ms <= ultimo_timestamp_ms:
+                timestamp_ms = ultimo_timestamp_ms + 1
+            ultimo_timestamp_ms = timestamp_ms
+
+            # Procesamiento coordinado de EPP (Casco + Chaleco)
+            try:
+                res_epp = procesar_frame_epp(
+                    frame,
+                    detector,
+                    timestamp_ms,
+                    dibujar_hud=True,
+                )
+                consecutivos_exito += 1
+                if reintentos_recuperacion > 0 and consecutivos_exito >= 5:
+                    reintentos_recuperacion = 0
+            except Exception as e:
+                err_str = str(e)
+                consecutivos_exito = 0
+
+                # Control específico de error por cierre de executor en MediaPipe
+                if "cannot schedule new futures after shutdown" in err_str or "shutdown" in err_str.lower():
+                    if reintentos_recuperacion < 3:
+                        reintentos_recuperacion += 1
+                        print(f"⚠️ Detector MediaPipe cerrado o inválido. Reintentando recuperación ({reintentos_recuperacion}/3)...")
+                        try:
+                            if detector is not None:
+                                detector.close()
+                        except Exception:
+                            pass
+                        detector = None
+                        time.sleep(0.5)
+                        try:
+                            detector = crear_detector_epp()
+                            print(f"✅ Detector MediaPipe recreado con éxito (intento {reintentos_recuperacion}/3).")
+                            continue
+                        except Exception as err_recrear:
+                            print(f"❌ Error al recrear detector MediaPipe: {err_recrear}")
+                            continue
+                    else:
+                        print("❌ Error fatal: MediaPipe falló tras 3 intentos consecutivos de recuperación. Deteniendo hilo de cámara de forma controlada.")
+                        activo = False
+                        break
+                else:
+                    # Para otros errores no permitimos spam continuo idéntico
+                    ahora = time.time()
+                    if err_str != ultimo_error_impreso or (ahora - tiempo_ultimo_error) > 5.0:
+                        print("⚠️ Error en procesamiento EPP:", e)
+                        ultimo_error_impreso = err_str
+                        tiempo_ultimo_error = ahora
+                    time.sleep(0.05)
+                    continue
+
+            # --------------------------------------------------
+            # ACTUALIZACIÓN DE ESTADO COMPARTIDO (CON LOCK)
+            # --------------------------------------------------
+            with bloqueo:
+                estado_epp_actual = {
+                    "casco": res_epp["casco"],
+                    "chaleco": res_epp["chaleco"],
+                    "epp_completo": res_epp["epp_completo"],
+                    "estado": res_epp["estado"],
+                    "porcentaje_casco": res_epp["porcentaje_casco"],
+                    "porcentaje_chaleco": res_epp["porcentaje_chaleco"],
+                    "rostro_detectado": res_epp["rostro_detectado"],
+                }
+                estado_casco = "CASCO OK" if res_epp["casco"] else ("NO HAY CASCO" if res_epp["rostro_detectado"] else "SIN DETECTAR")
+                porcentaje_casco = res_epp["porcentaje_casco"]
+                frame_actual = res_epp["frame_anotado"].copy()
+
+            # --------------------------------------------------
+            # GESTIÓN DE ALERTAS (EPP: Casco + Chaleco)
+            # --------------------------------------------------
+            rostro_detectado = res_epp["rostro_detectado"]
+            casco_ok = res_epp["casco"]
+            chaleco_ok = res_epp["chaleco"]
+            epp_completo = res_epp["epp_completo"]
+            zona_casco = res_epp.get("zona_casco")
+            zona_chaleco = res_epp.get("zona_chaleco")
+
+            if not rostro_detectado:
+                frames_falta_actual = 0
+                condicion_falta_actual = None
+                if alerta_activa:
+                    print("👤 Persona salió de la cámara. Alerta rearmada.")
+                    alerta_activa = False
+                    tipo_falta_alerta_activa = None
+
+            elif epp_completo:
+                frames_falta_actual = 0
+                condicion_falta_actual = None
+                if alerta_activa:
+                    print("🟢 EPP completo colocado nuevamente. Registrando colocación y rearmando sistema...")
+                    trabajador_actual = buscar_trabajador_por_dni(DNI_TRABAJADOR_ACTUAL)
+                    if trabajador_actual:
+                        if tipo_falta_alerta_activa in ("FALTA_CASCO", "FALTA_AMBOS"):
+                            acumular_deteccion_colocacion_casco(trabajador_actual)
+                        if tipo_falta_alerta_activa in ("FALTA_CHALECO", "FALTA_AMBOS"):
+                            acumular_deteccion_colocacion_chaleco(trabajador_actual)
+                    alerta_activa = False
+                    tipo_falta_alerta_activa = None
+
+            else:
+                # Rostro presente pero falta al menos un elemento de EPP
+                if not casco_ok and not chaleco_ok:
+                    condicion_ahora = "FALTA_AMBOS"
+                    problema_texto = "Faltan casco y chaleco de seguridad"
+                    tipo_falta_code = "EPP_INCOMPLETO"
+                elif not casco_ok:
+                    condicion_ahora = "FALTA_CASCO"
+                    problema_texto = "Trabajador sin casco de seguridad"
+                    tipo_falta_code = "CASCO_RETIRADO"
+                else:
+                    condicion_ahora = "FALTA_CHALECO"
+                    problema_texto = "Trabajador sin chaleco reflectante"
+                    tipo_falta_code = "CHALECO_RETIRADO"
+
+                # Determinar zona zoom según la falta
+                if condicion_ahora == "FALTA_AMBOS":
+                    if zona_casco is not None and zona_chaleco is not None:
+                        zona_zoom_candidata = (
+                            min(zona_casco[0], zona_chaleco[0]),
+                            min(zona_casco[1], zona_chaleco[1]),
+                            max(zona_casco[2], zona_chaleco[2]),
+                            max(zona_casco[3], zona_chaleco[3]),
+                        )
+                    else:
+                        zona_zoom_candidata = zona_casco if zona_casco is not None else zona_chaleco
+                elif condicion_ahora == "FALTA_CASCO":
+                    zona_zoom_candidata = zona_casco
+                else:
+                    zona_zoom_candidata = zona_chaleco
+
+                # Antiduplicación: si la misma condición ya generó alerta activa, no volver a disparar
+                if alerta_activa and tipo_falta_alerta_activa == condicion_ahora:
+                    frames_falta_actual = 0
+                else:
+                    if condicion_ahora == condicion_falta_actual and zona_zoom_candidata is not None:
+                        frames_falta_actual += 1
+                    else:
+                        condicion_falta_actual = condicion_ahora
+                        frames_falta_actual = 1 if zona_zoom_candidata is not None else 0
+
+                    # Indicador de confirmación sobre la ventana
+                    h_f = res_epp["frame_anotado"].shape[0]
+                    cv2.putText(
+                        res_epp["frame_anotado"],
+                        f"Confirmando {condicion_ahora} {frames_falta_actual}/{FRAMES_CONFIRMACION_RETIRO}",
+                        (20, h_f - 20),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.65,
+                        (0, 0, 255),
+                        2,
+                    )
+
+                    if (
+                        frames_falta_actual >= FRAMES_CONFIRMACION_RETIRO
+                        and rostro_detectado
+                        and zona_zoom_candidata is not None
+                    ):
+                        print(f"🚨 Falta de EPP confirmada ({condicion_ahora}). Generando alerta...")
+                        nueva_alerta = crear_fotos_alerta(
+                            res_epp["frame_anotado"],
+                            zona_zoom_candidata,
+                            tipo_falta=tipo_falta_code,
+                            casco_bool=casco_ok,
+                            chaleco_bool=chaleco_ok,
+                            problema_texto=problema_texto,
+                        )
+                        if nueva_alerta is not None:
+                            with bloqueo:
+                                ultima_alerta = nueva_alerta
+                            alerta_activa = True
+                            tipo_falta_alerta_activa = condicion_ahora
+                            frames_falta_actual = 0
+
+            # Mostrar en ventana única de 800x600
+            cv2.imshow(nombre_ventana, res_epp["frame_anotado"])
+
+            tecla = cv2.waitKey(1) & 0xFF
+            if tecla == ord("q"):
+                activo = False
+                break
+    finally:
+        # Cierre controlado y seguro de cámara, detector y ventana en el MISMO hilo
+        try:
+            if camara is not None:
+                camara.release()
+        except Exception:
+            pass
+        try:
+            if detector is not None:
+                detector.close()
+        except Exception:
+            pass
+        cv2.destroyAllWindows()
+        print("Cámara y detector EPP cerrados correctamente.")
 
 
 # ==========================================================
@@ -791,23 +835,17 @@ threading.Thread(
 def cerrar():
     global activo
     global camara
-    global detector
 
     activo = False
+
     try:
         if camara is not None:
             camara.release()
     except Exception:
         pass
 
-    try:
-        if detector is not None:
-            detector.close()
-    except Exception:
-        pass
-
     cv2.destroyAllWindows()
-    print("Cámara y detector cerrados.")
+    print("Cámara cerrada.")
 
 
 # ==========================================================
@@ -1027,12 +1065,68 @@ def endpoint_trabajador():
 
 
 # ==========================================================
-# INICIO FLASK
+# DESCUBRIMIENTO DINÁMICO EN LAN (UDP BROADCAST)
+# ==========================================================
+
+PUERTO_UDP_DESCUBRIMIENTO = 5005
+
+def responder_descubrimiento_lan():
+    """
+    Escucha paquetes UDP de descubrimiento enviados por SafeVisionAI Android
+    en la red LAN y responde con los datos del servidor para conexión dinámica.
+    """
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        sock.bind(("", PUERTO_UDP_DESCUBRIMIENTO))
+        print(f"📡 Servicio de descubrimiento LAN activo en puerto UDP {PUERTO_UDP_DESCUBRIMIENTO}.")
+    except Exception as e:
+        print(f"⚠️ No se pudo iniciar el servicio de descubrimiento UDP ({e}).")
+        return
+
+    while activo:
+        try:
+            data, addr = sock.recvfrom(1024)
+            if not data:
+                continue
+            mensaje = data.decode("utf-8", errors="ignore").strip()
+            if "SAFEVISION_DISCOVER" in mensaje or "SAFEVISION_DISCOVERY_REQUEST" in mensaje:
+                # Responder con información del servidor y puerto HTTP 5000
+                respuesta = '{"nombre":"SafeVisionAI_CAMERA","estado":"activo","puerto":5000}'
+                sock.sendto(respuesta.encode("utf-8"), addr)
+        except Exception:
+            if not activo:
+                break
+            time.sleep(0.1)
+
+    try:
+        sock.close()
+    except Exception:
+        pass
+
+
+# ==========================================================
+# INICIO FLASK Y HILOS DE EJECUCIÓN
 # ==========================================================
 
 if __name__ == "__main__":
     ip = obtener_ip()
     asegurar_bucket_storage()
+
+    # 1. Iniciar hilo de descubrimiento LAN (UDP)
+    hilo_descubrimiento = threading.Thread(
+        target=responder_descubrimiento_lan,
+        daemon=True,
+    )
+    hilo_descubrimiento.start()
+
+    # 2. Iniciar hilo de cámara y detector EPP
+    hilo_camara = threading.Thread(
+        target=iniciar_camara,
+        daemon=True,
+    )
+    hilo_camara.start()
+
     print()
     print("==============================")
     print("     SAFEVISIONAI CAMERA")
@@ -1045,10 +1139,13 @@ if __name__ == "__main__":
     print(f"ALERTA: http://{ip}:5000/alerta")
     print(f"FOTOS LOCALES: http://{ip}:5000/fotos/")
     print(f"STORAGE PUBLICO: {SUPABASE_STORAGE_URL}/object/public/{SUPABASE_STORAGE_BUCKET}/")
+    print(f"DESCUBRIMIENTO LAN UDP: Puerto {PUERTO_UDP_DESCUBRIMIENTO}")
     print("==============================")
 
     app.run(
         host="0.0.0.0",
         port=5000,
         threaded=True,
+        debug=False,
+        use_reloader=False,
     )

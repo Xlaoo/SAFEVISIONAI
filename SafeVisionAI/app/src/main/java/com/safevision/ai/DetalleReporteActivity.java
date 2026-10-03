@@ -458,7 +458,11 @@ public class DetalleReporteActivity extends BaseActivity {
         try {
             int idx = urlOriginal.indexOf("/fotos/");
             String pathFotos = urlOriginal.substring(idx);
-            return "http://" + CameraConfig.IP_SERVIDOR + ":" + CameraConfig.PUERTO + pathFotos;
+            String base = CameraConfig.getUrlBase();
+            if (base.endsWith("/")) {
+                base = base.substring(0, base.length() - 1);
+            }
+            return base + pathFotos;
         } catch (Exception e) {
             return null;
         }

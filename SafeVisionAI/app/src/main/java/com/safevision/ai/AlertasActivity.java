@@ -474,7 +474,11 @@ public class AlertasActivity extends BaseActivity {
         }
 
         if (urlServidor == null) {
-            urlServidor = "http://10.237.144.107:5000";
+            String base = CameraConfig.getUrlBase();
+            if (base.endsWith("/")) {
+                base = base.substring(0, base.length() - 1);
+            }
+            urlServidor = base;
         }
 
         final String urlServidorFinal = urlServidor;
